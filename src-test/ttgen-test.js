@@ -68,3 +68,112 @@ TokenizerTest.prototype.test = function() {
     assertEquals(undefined, t.next());
 };
 
+var ParserTest = TestCase("ParserTest");
+
+ParserTest.prototype.testEmpty = function() {
+    assertEquals(undefined, ttgen.parse(""));
+};
+
+ParserTest.prototype.testId = function() {
+    assertEquals({ type: "id", value: "p_0" }, ttgen.parse("p_0"));
+    assertEquals({ type: "id", value: "p_0" }, ttgen.parse(" p_0  "));
+
+    var e = ttgen.parse(")");
+    assertEquals("error", e.type);
+    assertEquals(0, e.pos);
+
+    e = ttgen.parse("p_0)");
+    assertEquals("error", e.type);
+    assertEquals(3, e.pos);
+
+    e = ttgen.parse("p_0 p_0");
+    assertEquals("error", e.type);
+    assertEquals(4, e.pos);
+};
+
+ParserTest.prototype.testNot = function() {
+    assertEquals({ type: "not", value: { type: "id", value: "A" } }, ttgen.parse("\\lnot A"));
+    assertEquals({ type: "not", value: { type: "not", value: { type: "id", value: "A" } } }, ttgen.parse("\\neg \\lnot A"));
+    var e = ttgen.parse("\\lnot A B");
+    assertEquals("error", e.type);
+    assertEquals(8, e.pos);
+};
+
+ParserTest.prototype.testAnd = function() {
+    var r = ttgen.parse("(A\\land B)");
+    assertEquals({ type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
+
+    r = ttgen.parse("(A\\land\\lnot B)");
+    assertEquals({
+        type: "and",
+        lvalue: {
+            type: "id",
+            value: "A"
+        },
+        rvalue: {
+            type: "not",
+            value: {
+                type: "id",
+                value: "B"
+            }
+        }
+    }, r);
+
+    r = ttgen.parse("(A\\land(B\\land C))");
+    assertEquals({
+        type: "and",
+        lvalue: {
+            type: "id",
+            value: "A"
+        },
+        rvalue: {
+            type: "and",
+            lvalue: {
+                type: "id",
+                value: "B"
+            },
+            rvalue: {
+                type: "id",
+                value: "C"
+            }
+        }
+    }, r);
+};
+
+ParserTest.prototype.testImplParens = function() {
+    var r = ttgen.parse("A\\land B");
+    assertEquals({ type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
+};
+
+ParserTest.prototype.test = function() {
+    var r = ttgen.parse("(A\\to B)");
+    assertEquals({ type: "implies", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
+
+    r = ttgen.parse("A\\to( ( B_{10}\\land Cee)\\leftrightarrow A)");
+    assertEquals({
+        type: "implies",
+        lvalue: {
+            type: "id",
+            value: "A"
+        },
+        rvalue: {
+            type: "iff",
+            lvalue: {
+                type: "and",
+                lvalue: {
+                    type: "id",
+                    value: "B_{10}"
+                },
+                rvalue: {
+                    type: "id",
+                    value: "Cee"
+                }
+            },
+            rvalue: {
+                type: "id",
+                value: "A"
+            }
+        }
+    }, r);
+};
+
