@@ -81,7 +81,8 @@ ttgen.parse = function(input, extra_outer) {
     // 2a. extra_outer is false -> try with extra outer parentheses
     // 2b. extra_outer is true -> another extra pair of parens won't help; fail
     // 3. parse failed -> extra parentheses won't help; we're doomed
-    if (res.type === "error" || !tok.next())
+    var next = tok.next();
+    if (res.type === "error" || !next)
         return res;
     else {
         if (!extra_outer) {
@@ -91,8 +92,10 @@ ttgen.parse = function(input, extra_outer) {
                 --res2.pos;
             }
             return res2;
-        } else
-            return res; // return original error
+        } else {
+            --next.pos;
+            return { type: "error", pos: next.pos, desc: "unexpected stuff at " + next.pos };
+        }
     }
 };
 

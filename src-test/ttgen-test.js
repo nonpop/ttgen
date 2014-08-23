@@ -177,3 +177,13 @@ ParserTest.prototype.test = function() {
     }, r);
 };
 
+ParserTest.prototype.testError = function() {
+    var r = ttgen.parse("A\\to B)");
+    assertEquals("error", r.type);
+    assertEquals(6, r.pos);
+
+    r = ttgen.parse("\\lnot(A\\to B");
+    assertEquals("error", r.type);
+    assertEquals(12, r.pos);
+};
+
