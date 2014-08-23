@@ -2,10 +2,6 @@
 
 var ttgen = {};
 
-ttgen.foo = function() {
-    return "bar";
-};
-
 ttgen.Tokenizer = function(input) {
     this.input = input;
     this.position = 0;
