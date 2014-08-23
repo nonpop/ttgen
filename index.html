@@ -23,14 +23,21 @@
             var lastInput = "";
             var checkForUpdates = function() {
                 var s = document.getElementById("input").value;
-                if (s !== lastInput) {
+                if (
+                        s !== lastInput || 
+                        ttgen.options.reverseCols !== document.getElementById("reverse-cols").checked ||
+                        ttgen.options.reverseRows !== document.getElementById("reverse-rows").checked
+                   ) {
                     lastInput = s;
+                    ttgen.options.reverseCols = document.getElementById("reverse-cols").checked;
+                    ttgen.options.reverseRows = document.getElementById("reverse-rows").checked;
                     generateTables();
                 }
             };
 
             var initialize = function() {
-                document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
+                //document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
+                document.getElementById("input").value = "A\\to B";
                 generateTables();
                 document.getElementById("input").focus();
                 document.getElementById("input").select();
@@ -41,7 +48,11 @@
         <title>Truth Table Generator</title>
     </head>
     <body onload="initialize()">
-        <p>Enter formula: <input type="text" id="input"></p>
+        <p>
+        <label>Enter formula: <input type="text" id="input"></label>
+        <label><input type="checkbox" id="reverse-rows">Reverse rows</label>
+        <label><input type="checkbox" id="reverse-cols">Reverse proposition symbol columns</label>
+        </p>
         <p><div id="theTable"></div></p>
         <p><textarea id="theLatex" readonly="readonly" rows="14"></textarea></div></p>
     </body>

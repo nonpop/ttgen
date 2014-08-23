@@ -2,6 +2,11 @@
 
 var ttgen = {};
 
+ttgen.options = {
+    reverseCols : false,
+    reverseRows : false
+};
+
 ttgen.Tokenizer = function(input) {
     this.input = input;
     this.position = 0;
@@ -187,8 +192,18 @@ ttgen.rawGetSymbols = function(tree) {
 
 ttgen.getValuation = function(symbols, tableLine) {
     var res = {};
-    for (var i = 1; i <= symbols.length; ++i) {
-        res[symbols[i-1]] = (tableLine & (1 << (symbols.length - i)))?true:false;
+    for (var i = 0; i < symbols.length; ++i) {
+        var col;
+        if (!ttgen.options.reverseCols)
+            col = i;
+        else
+            col = (symbols.length-1) - i;
+
+        var bit = tableLine & (1 << col);
+        if (ttgen.options.reverseRows)
+            bit = !bit;
+
+        res[symbols[i]] = bit? true : false;
     }
     return res;
 };
@@ -307,17 +322,17 @@ ttgen.makeLatexTableRow = function(tree, line) {
     var res = "    ";
     var sym = ttgen.getSymbols(tree);
     var val = ttgen.getValuation(sym, line);
-    ttgen.evaluate(tree, val);
     var tmp = [];
-    for (var i = 1; i <= sym.length; ++i) {
-        tmp.push((line & (1 << (sym.length-i)))?"1":"0");
-    }
+    sym.forEach(function(s) {
+        tmp.push(val[s]? "1" : "0");
+    });
     res += tmp.join(" & ") + " ";
 
     var entry = function(tree) {
         return "& " + (tree.truthValue?"1":"0") + " ";
     };
 
+    ttgen.evaluate(tree, val);
     var helper = function(tree) {
         switch (tree.type) {
             case "id":
