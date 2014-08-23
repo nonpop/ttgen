@@ -19,17 +19,28 @@
                 MathJax.Hub.Queue([ "Typeset", MathJax.Hub ]);
             };
 
-            var setDefaultInput = function() {
+            var lastInput = "";
+            var checkForUpdates = function() {
+                var s = document.getElementById("input").value;
+                if (s !== lastInput) {
+                    lastInput = s;
+                    generateTables();
+                }
+            };
+
+            var initialize = function() {
                 document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
                 generateTables();
                 document.getElementById("input").focus();
                 document.getElementById("input").select();
+
+                setInterval("checkForUpdates()", 1500);
             };
         </script>
         <title>Truth Table Generator</title>
     </head>
-    <body onload="setDefaultInput()">
-        <p>Enter formula: <input type="text" id="input" onkeyup="generateTables()"></p>
+    <body onload="initialize()">
+        <p>Enter formula: <input type="text" id="input"></p>
         <p><div id="theTable"></div></p>
         <p><textarea id="theLatex" readonly="readonly" rows="12"></textarea></div></p>
     </body>
