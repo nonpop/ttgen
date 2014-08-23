@@ -18,20 +18,21 @@ ttgen.Tokenizer.prototype.next = function() {
         return undefined;
 
     var next = this.input[this.position];
+    var pos = this.position;
     ++this.position;
     switch (next) {
         case "(":
-            return { type: "lparen" };
+            return { type: "lparen", pos: pos };
         case ")":
-            return { type: "rparen" };
+            return { type: "rparen", pos: pos };
         case "\\":
-            return this.parseCommand();
+            return this.parseCommand(pos);
         default:
-            return this.parseIdentifier(next);
+            return this.parseIdentifier(next, pos);
     }
 };
 
-ttgen.Tokenizer.prototype.parseIdentifier = function(first) {
+ttgen.Tokenizer.prototype.parseIdentifier = function(first, pos) {
     var res = first;
     while (this.position < this.input.length) {
         var next = this.input[this.position];
@@ -41,27 +42,31 @@ ttgen.Tokenizer.prototype.parseIdentifier = function(first) {
         res += next;
         ++this.position;
     }
-    return { type: "id", value: res };
+    return { type: "id", value: res, pos: pos };
 };
 
-ttgen.Tokenizer.prototype.parseCommand = function() {
-    var cmd = this.parseIdentifier("\\").value;
+ttgen.Tokenizer.prototype.parseCommand = function(pos) {
+    var cmd = this.parseIdentifier("\\", pos).value;
     switch (cmd) {
         case "\\land":
         case "\\wedge":
-            return { type: "and" };
+            return { type: "and", pos: pos };
         case "\\lor":
         case "\\vee":
-            return { type: "or" };
+            return { type: "or", pos: pos };
         case "\\lnot":
         case "\\neg":
-            return { type: "not" };
+            return { type: "not", pos: pos };
         case "\\to":
-            return { type: "implies" };
+            return { type: "implies", pos: pos };
         case "\\leftrightarrow":
-            return { type: "iff" };
+            return { type: "iff", pos: pos };
         default:
-            return { type: "id", value: cmd };
+            return { type: "id", value: cmd, pos: pos };
     }
+};
+
+ttgen.Parser = function(tok) {
+    this.tok = tok;
 };
 

@@ -34,11 +34,11 @@ TokenizerTest.prototype.testId = function() {
 
 TokenizerTest.prototype.testId2 = function() {
     var t = new ttgen.Tokenizer("  hello hi() hey   ");
-    assertEquals({ type: "id", value: "hello" }, t.next());
-    assertEquals({ type: "id", value: "hi" }, t.next());
-    assertEquals({ type: "lparen" }, t.next());
-    assertEquals({ type: "rparen" }, t.next());
-    assertEquals({ type: "id", value: "hey" }, t.next());
+    assertEquals({ type: "id", value: "hello", pos: 2 }, t.next());
+    assertEquals({ type: "id", value: "hi", pos: 8 }, t.next());
+    assertEquals({ type: "lparen", pos: 10 }, t.next());
+    assertEquals({ type: "rparen", pos: 11 }, t.next());
+    assertEquals({ type: "id", value: "hey", pos: 13 }, t.next());
     assertEquals(undefined, t.next());
 };
 
@@ -50,21 +50,21 @@ TokenizerTest.prototype.testCmd = function() {
 
 TokenizerTest.prototype.testCmd2 = function() {
     var t = new ttgen.Tokenizer("\\veee");
-    assertEquals({ type: "id", value: "\\veee"}, t.next());
+    assertEquals({ type: "id", value: "\\veee", pos: 0}, t.next());
     assertEquals(undefined, t.next());
 };
 
 TokenizerTest.prototype.test = function() {
     var t = new ttgen.Tokenizer("  (p_0\\land(p_1\\to\\p_{2}) ) ");
-    assertEquals({ type: "lparen" }, t.next());
-    assertEquals({ type: "id", value: "p_0" }, t.next());
-    assertEquals({ type: "and" }, t.next());
-    assertEquals({ type: "lparen" }, t.next());
-    assertEquals({ type: "id", value: "p_1" }, t.next());
-    assertEquals({ type: "implies" }, t.next());
-    assertEquals({ type: "id", value: "\\p_{2}" }, t.next());
-    assertEquals({ type: "rparen" }, t.next());
-    assertEquals({ type: "rparen" }, t.next());
+    assertEquals({ type: "lparen", pos: 2 }, t.next());
+    assertEquals({ type: "id", value: "p_0", pos: 3 }, t.next());
+    assertEquals({ type: "and", pos: 6 }, t.next());
+    assertEquals({ type: "lparen", pos: 11 }, t.next());
+    assertEquals({ type: "id", value: "p_1", pos: 12 }, t.next());
+    assertEquals({ type: "implies", pos: 15 }, t.next());
+    assertEquals({ type: "id", value: "\\p_{2}", pos: 18 }, t.next());
+    assertEquals({ type: "rparen", pos: 24 }, t.next());
+    assertEquals({ type: "rparen", pos: 26 }, t.next());
     assertEquals(undefined, t.next());
 };
 
