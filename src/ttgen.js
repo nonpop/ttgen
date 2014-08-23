@@ -193,3 +193,31 @@ ttgen.getValuation = function(symbols, tableLine) {
     return res;
 };
 
+ttgen.evaluate = function(tree, val) {
+    switch (tree.type) {
+        case "id":
+            tree.truthValue = val[tree.value];
+            break;
+        case "and":
+            ttgen.evaluate(tree.lvalue, val);
+            ttgen.evaluate(tree.rvalue, val);
+            tree.truthValue = tree.lvalue.truthValue & tree.rvalue.truthValue;
+            break;
+        case "or":
+            ttgen.evaluate(tree.lvalue, val);
+            ttgen.evaluate(tree.rvalue, val);
+            tree.truthValue = tree.lvalue.truthValue | tree.rvalue.truthValue;
+            break;
+        case "implies":
+            ttgen.evaluate(tree.lvalue, val);
+            ttgen.evaluate(tree.rvalue, val);
+            tree.truthValue = !tree.lvalue.truthValue | tree.rvalue.truthValue;
+            break;
+        case "iff":
+            ttgen.evaluate(tree.lvalue, val);
+            ttgen.evaluate(tree.rvalue, val);
+            tree.truthValue = tree.lvalue.truthValue === tree.rvalue.truthValue;
+            break;
+    }
+};
+

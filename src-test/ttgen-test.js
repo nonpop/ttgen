@@ -223,3 +223,87 @@ EvaluatorTest.prototype.testValuation = function() {
     assertEquals(true, v["C"]);
 };
 
+EvaluatorTest.prototype.testId = function() {
+    var tree = ttgen.parse("A");
+    var sym = ttgen.getSymbols(tree);
+
+    var val = ttgen.getValuation(sym, 0);
+    ttgen.evaluate(tree, val);
+    assertEquals(false, tree.truthValue);
+
+    val = ttgen.getValuation(sym, 1);
+    ttgen.evaluate(tree, val);
+    assertEquals(true, tree.truthValue);
+};
+
+EvaluatorTest.prototype.testAnd = function() {
+    var tree = ttgen.parse("A\\land B");
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 3; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(false, tree.truthValue);
+    }
+    var val = ttgen.getValuation(sym, 3);
+    ttgen.evaluate(tree, val);
+    assertEquals(true, tree.truthValue);
+};
+
+EvaluatorTest.prototype.testOr = function() {
+    var tree = ttgen.parse("A\\lor B");
+    var sym = ttgen.getSymbols(tree);
+
+    var val = ttgen.getValuation(sym, 0);
+    ttgen.evaluate(tree, val);
+    assertEquals(false, tree.truthValue);
+
+    for (var i = 1; i < 4; ++i) {
+        val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(true, tree.truthValue);
+    }
+};
+
+EvaluatorTest.prototype.testImplies = function() {
+    var tree = ttgen.parse("A\\to B");
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 4; ++i) {
+        if (i === 2)
+            continue;
+
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(true, tree.truthValue);
+    }
+    var val = ttgen.getValuation(sym, 2);
+    ttgen.evaluate(tree, val);
+    assertEquals(false, tree.truthValue);
+};
+
+EvaluatorTest.prototype.testIff = function() {
+    var tree = ttgen.parse("A\\leftrightarrow B");
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 4; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        if (i === 0 || i === 3)
+            assertEquals(true, tree.truthValue);
+        else
+            assertEquals(false, tree.truthValue);
+    }
+};
+
+EvaluatorTest.prototype.test = function() {
+    // (A -> (B -> C)) -> ((A -> B) -> (A -> C))
+    var tree = ttgen.parse("(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))");
+    var sym = ttgen.getSymbols(tree);
+    for (var i = 0; i < 8; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(true, tree.truthValue);
+    }
+};
+
