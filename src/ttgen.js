@@ -356,3 +356,101 @@ ttgen.makeHTMLTable = function(tree) {
     return res;
 };
 
+// TODO: extract common stuff from make*Table*
+ttgen.makeLatexTableHeader = function(tree) {
+    var res = "  " + ttgen.getSymbols(tree).map(function(s) { return "$" + s + "$"; }).join(" & ") + " ";
+
+    ttgen.evaluateParens(tree);
+    var treeToHdr = function(tree) {
+        switch (tree.type) {
+            case "id":
+                return "& $" + ttgen.parHelper(tree.par, tree.value) + "$ ";
+            case "not":
+                return "& $" + ttgen.parHelper(tree.par, "\\lnot") + "$ " + treeToHdr(tree.value);
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                var tmp = treeToHdr(tree.lvalue);
+                tmp += "& $";
+                switch (tree.type) {
+                    case "and": tmp += "\\land"; break;
+                    case "or": tmp += "\\lor"; break;
+                    case "implies": tmp += "\\to"; break;
+                    case "iff": tmp += "\\leftrightarrow"; break;
+                }
+                tmp += "$ ";
+                tmp += treeToHdr(tree.rvalue);
+                return tmp;
+        }
+    };
+    res += treeToHdr(tree);
+    return res;
+};
+
+ttgen.makeLatexTableRow = function(tree, line) {
+    var res = "  ";
+    var sym = ttgen.getSymbols(tree);
+    var val = ttgen.getValuation(sym, line);
+    ttgen.evaluate(tree, val);
+    var tmp = [];
+    for (var i = 1; i <= sym.length; ++i) {
+        tmp.push((line & (1 << (sym.length-i)))?"$1$":"$0$");
+    }
+    res += tmp.join(" & ") + " ";
+
+    var entry = function(tree) {
+        return "& $" + (tree.truthValue?"1":"0") + "$ ";
+    };
+
+    var helper = function(tree) {
+        switch (tree.type) {
+            case "id":
+                return entry(tree);
+            case "not":
+                return entry(tree) + helper(tree.value);
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                return helper(tree.lvalue) + entry(tree) + helper(tree.rvalue);
+
+        }
+    };
+    res += helper(tree);
+    return res;
+};
+
+ttgen.makeLatexTable = function(tree) {
+    var res = "\\begin{tabular}";
+
+    var sym = ttgen.getSymbols(tree);
+    res += "{" + "c".repeat(sym.length) + "|";
+    var treeSize = function(tree) {
+        switch (tree.type) {
+            case "id": return 1;
+            case "not": return 1 + treeSize(tree.value);
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                        return 1 + treeSize(tree.lvalue) + treeSize(tree.rvalue);
+        }
+    };
+    res += "c".repeat(treeSize(tree)) + "}\n";
+    res += ttgen.makeLatexTableHeader(tree);
+    res += "\\\\\n  \\hline\n";
+    
+    for (var i = 0; i < Math.pow(2, sym.length); ++i) {
+        res += ttgen.makeLatexTableRow(tree, i);
+        if (i+1 < Math.pow(2, sym.length)) {
+            res += "\\\\\n";
+        } else {
+            res += "\n";
+        }
+    }
+
+    res += "\\end{tabular}";
+    return res;
+};
+

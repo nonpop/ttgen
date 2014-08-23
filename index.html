@@ -5,20 +5,31 @@
         <link rel="stylesheet" type="text/css" href="src/ttgen.css">
         <script src="src/ttgen.js"></script>
         <script>
-            var generateHTML = function() {
+            var generateTables = function() {
                 var s = document.getElementById("input").value;
                 var tree = ttgen.parse(s);
                 if (tree && (tree.type !== "error")) {
-                    var t = ttgen.makeHTMLTable(tree);
-                    document.getElementById("theTable").innerHTML = t;
+                    document.getElementById("theTable").innerHTML = ttgen.makeHTMLTable(tree);
+                    document.getElementById("theLatex").value = ttgen.makeLatexTable(tree);
+                } else {
+                    document.getElementById("theTable").innerHTML = "";
+                    document.getElementById("theLatex").value = "";
                 }
+            };
+
+            var setDefaultInput = function() {
+                document.getElementById("input").value = "(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))";
+                generateTables();
+                document.getElementById("input").focus();
+                document.getElementById("input").select();
             };
         </script>
         <title>Truth Table Generator</title>
     </head>
-    <body>
-        <input type="text" id="input" onkeyup="generateHTML()">
-        <div id="theTable"></div>
+    <body onload="setDefaultInput()">
+        <p>Enter formula: <input type="text" id="input" onkeyup="generateTables()"></p>
+        <p><div id="theTable"></div></p>
+        <p><textarea id="theLatex" readonly="readonly" rows="12"></textarea></div></p>
     </body>
 </html>
 
