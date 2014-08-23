@@ -271,6 +271,7 @@ ttgen.parHelper = function(par, s) {
     return s;
 };
 
+// TODO: extract common stuff from make*Table*
 ttgen.makeLatexTableHeader = function(tree) {
     var res = "    " + ttgen.getSymbols(tree).join(" & ") + " ";
 
