@@ -153,3 +153,35 @@ ttgen.parse_binop = function(tok) {
     return { type: op.type, lvalue: lsub, rvalue: rsub };
 };
 
+// remove duplicates from a sorted array
+Array.prototype.uniq = function() {
+    if (this.length === 0)
+        return this;
+    var res = [ this[0] ];
+    for (var i = 1; i < this.length; ++i) {
+        if (this[i-1] !== this[i])
+            res.push(this[i]);
+    }
+    return res;
+};
+
+ttgen.getSymbols = function(tree) {
+    return ttgen.rawGetSymbols(tree).sort().uniq();
+};
+
+ttgen.rawGetSymbols = function(tree) {
+    switch (tree.type) {
+        case "id":
+            return [ tree.value ];
+        case "not":
+            return ttgen.rawGetSymbols(tree.value);
+        case "and":
+        case "or":
+        case "implies":
+        case "iff":
+            return ttgen.rawGetSymbols(tree.lvalue).concat(ttgen.rawGetSymbols(tree.rvalue));
+        default:
+            return undefined;
+    }
+};
+

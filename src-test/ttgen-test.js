@@ -187,3 +187,20 @@ ParserTest.prototype.testError = function() {
     assertEquals(12, r.pos);
 };
 
+ParserTest.prototype.testUniq = function() {
+    assertEquals([], [].uniq());
+    assertEquals(["A","B"], ["A","B"].uniq());
+    assertEquals(["A","B"], ["A","B","A","B"].sort().uniq());
+    assertEquals(["A","B","C"], ["C","B","A","A","B","C"].sort().uniq());
+};
+
+ParserTest.prototype.testSymbols = function() {
+    assertEquals(["A"], ttgen.getSymbols(ttgen.parse("A")));
+    assertEquals(["A","B"], ttgen.getSymbols(ttgen.parse("A\\land B")));
+    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("A\\land (B\\lor C)")));
+    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("A\\land (\\lnot B\\lor C)")));
+    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor C)")));
+    assertEquals(["A","B"], ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor B)")));
+    assertEquals(["A"], ttgen.getSymbols(ttgen.parse("A\\land A")));
+};
+
