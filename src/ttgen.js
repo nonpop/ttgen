@@ -4,7 +4,9 @@ var ttgen = {};
 
 ttgen.options = {
     reverseCols : false,
-    reverseRows : false
+    reverseRows : false,
+    trueSymbol : "1",
+    falseSymbol : "0",
 };
 
 ttgen.Tokenizer = function(input) {
@@ -324,12 +326,12 @@ ttgen.makeLatexTableRow = function(tree, line) {
     var val = ttgen.getValuation(sym, line);
     var tmp = [];
     sym.forEach(function(s) {
-        tmp.push(val[s]? "1" : "0");
+        tmp.push(val[s]? ttgen.options.trueSymbol : ttgen.options.falseSymbol);
     });
     res += tmp.join(" & ") + " ";
 
     var entry = function(tree) {
-        return "& " + (tree.truthValue?"1":"0") + " ";
+        return "& " + (tree.truthValue? ttgen.options.trueSymbol : ttgen.options.falseSymbol) + " ";
     };
 
     ttgen.evaluate(tree, val);

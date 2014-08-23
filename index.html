@@ -26,11 +26,15 @@
                 if (
                         s !== lastInput || 
                         ttgen.options.reverseCols !== document.getElementById("reverse-cols").checked ||
-                        ttgen.options.reverseRows !== document.getElementById("reverse-rows").checked
+                        ttgen.options.reverseRows !== document.getElementById("reverse-rows").checked ||
+                        ttgen.options.trueSymbol !== document.getElementById("true-symbol").value ||
+                        ttgen.options.falseSymbol !== document.getElementById("false-symbol").value
                    ) {
                     lastInput = s;
                     ttgen.options.reverseCols = document.getElementById("reverse-cols").checked;
                     ttgen.options.reverseRows = document.getElementById("reverse-rows").checked;
+                    ttgen.options.trueSymbol = document.getElementById("true-symbol").value;
+                    ttgen.options.falseSymbol = document.getElementById("false-symbol").value;
                     generateTables();
                 }
             };
@@ -41,6 +45,8 @@
                 generateTables();
                 document.getElementById("input").focus();
                 document.getElementById("input").select();
+                document.getElementById("true-symbol").value = "1";
+                document.getElementById("false-symbol").value = "0";
 
                 setInterval("checkForUpdates()", 1500);
             };
@@ -52,6 +58,9 @@
         <label>Enter formula: <input type="text" id="input"></label>
         <label><input type="checkbox" id="reverse-rows">Reverse rows</label>
         <label><input type="checkbox" id="reverse-cols">Reverse proposition symbol columns</label>
+        <br>
+        <label>Symbol for <i>true</i>: <input type="text" id="true-symbol" size="5"></label>
+        <label>Symbol for <i>false</i>: <input type="text" id="false-symbol" size="5"></label>
         </p>
         <p><div id="theTable"></div></p>
         <p><textarea id="theLatex" readonly="readonly" rows="14"></textarea></div></p>
