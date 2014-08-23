@@ -276,11 +276,12 @@ ttgen.parHelper = function(par, s) {
 };
 
 ttgen.makeHTMLTableHeader = function(tree) {
-    var res = "<tr>\n";
+    var res = "<tr class=\"table-header\">\n";
     var sym = ttgen.getSymbols(tree);
     sym.forEach(function(s) {
         res += "  <th>" + s + "</th>\n";
     });
+    res += "  <th class=\"table-separator\"></th>\n";
 
     ttgen.evaluateParens(tree);
     var treeToHdr = function(tree) {
@@ -319,6 +320,7 @@ ttgen.makeHTMLTableRow = function(tree, line) {
     for (var i = 1; i <= sym.length; ++i) {
         res += "  <td>" + ((line & (1 << (sym.length-i)))?"1":"0") + "</td>\n";
     }
+    res += "  <td class=\"table-separator\"></td>\n";
 
     var entry = function(tree) {
         return "  <td>" + (tree.truthValue?"1":"0") + "</td>\n";

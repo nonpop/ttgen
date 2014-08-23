@@ -1,9 +1,19 @@
 table,th,td {
-    border:1px solid black;
-    border-collapse:collapse;
+    border: none;
+    border-collapse: collapse;
 }
 th,td {
-    padding:5px;
-    text-align:center;
+    padding: 5px;
+    text-align: center;
+}
+.table-header {
+    border-bottom: solid 1px black;
+}
+.table-separator {
+    border-left: solid 1px black;
+    padding: 0px;
+}
+tr:nth-child(even) {
+    background: #e8e8e8;
 }
 
