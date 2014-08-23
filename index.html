@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <link rel="stylesheet" type="text/css" href="src/ttgen.css">
         <script src="src/ttgen.js"></script>
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script>
             var generateTables = function() {
                 var s = document.getElementById("input").value;
@@ -15,10 +16,11 @@
                     document.getElementById("theTable").innerHTML = "";
                     document.getElementById("theLatex").value = "";
                 }
+                MathJax.Hub.Queue([ "Typeset", MathJax.Hub ]);
             };
 
             var setDefaultInput = function() {
-                document.getElementById("input").value = "(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))";
+                document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
                 generateTables();
                 document.getElementById("input").focus();
                 document.getElementById("input").select();

@@ -279,7 +279,7 @@ ttgen.makeHTMLTableHeader = function(tree) {
     var res = "<tr class=\"table-header\">\n";
     var sym = ttgen.getSymbols(tree);
     sym.forEach(function(s) {
-        res += "  <th>" + s + "</th>\n";
+        res += "  <th>\\(" + s + "\\)</th>\n";
     });
     res += "  <th class=\"table-separator\"></th>\n";
 
@@ -287,22 +287,22 @@ ttgen.makeHTMLTableHeader = function(tree) {
     var treeToHdr = function(tree) {
         switch (tree.type) {
             case "id":
-                return "  <th>" + ttgen.parHelper(tree.par, tree.value) + "</th>\n";
+                return "  <th>\\(" + ttgen.parHelper(tree.par, tree.value) + "\\)</th>\n";
             case "not":
-                return "  <th>" + ttgen.parHelper(tree.par, "&not;") + "</th>\n" + treeToHdr(tree.value);
+                return "  <th>\\(" + ttgen.parHelper(tree.par, "\\lnot") + "\\)</th>\n" + treeToHdr(tree.value);
             case "and":
             case "or":
             case "implies":
             case "iff":
                 var tmp = treeToHdr(tree.lvalue);
-                tmp += "  <th>";
+                tmp += "  <th>\\(";
                 switch (tree.type) {
-                    case "and": tmp += "&and;"; break;
-                    case "or": tmp += "&or;"; break;
-                    case "implies": tmp += "&rarr;"; break;
-                    case "iff": tmp += "&harr;"; break;
+                    case "and": tmp += "\\land"; break;
+                    case "or": tmp += "\\lor"; break;
+                    case "implies": tmp += "\\to"; break;
+                    case "iff": tmp += "\\leftrightarrow"; break;
                 }
-                tmp += "</th>\n";
+                tmp += "\\)</th>\n";
                 tmp += treeToHdr(tree.rvalue);
                 return tmp;
         }
@@ -318,12 +318,12 @@ ttgen.makeHTMLTableRow = function(tree, line) {
     var val = ttgen.getValuation(sym, line);
     ttgen.evaluate(tree, val);
     for (var i = 1; i <= sym.length; ++i) {
-        res += "  <td>" + ((line & (1 << (sym.length-i)))?"1":"0") + "</td>\n";
+        res += "  <td>\\(" + ((line & (1 << (sym.length-i)))?"1":"0") + "\\)</td>\n";
     }
     res += "  <td class=\"table-separator\"></td>\n";
 
     var entry = function(tree) {
-        return "  <td>" + (tree.truthValue?"1":"0") + "</td>\n";
+        return "  <td>\\(" + (tree.truthValue?"1":"0") + "\\)</td>\n";
     };
 
     var helper = function(tree) {
