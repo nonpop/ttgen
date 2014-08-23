@@ -358,28 +358,28 @@ ttgen.makeHTMLTable = function(tree) {
 
 // TODO: extract common stuff from make*Table*
 ttgen.makeLatexTableHeader = function(tree) {
-    var res = "  " + ttgen.getSymbols(tree).map(function(s) { return "$" + s + "$"; }).join(" & ") + " ";
+    var res = "    " + ttgen.getSymbols(tree).join(" & ") + " ";
 
     ttgen.evaluateParens(tree);
     var treeToHdr = function(tree) {
         switch (tree.type) {
             case "id":
-                return "& $" + ttgen.parHelper(tree.par, tree.value) + "$ ";
+                return "& " + ttgen.parHelper(tree.par, tree.value) + " ";
             case "not":
-                return "& $" + ttgen.parHelper(tree.par, "\\lnot") + "$ " + treeToHdr(tree.value);
+                return "& " + ttgen.parHelper(tree.par, "\\lnot") + " " + treeToHdr(tree.value);
             case "and":
             case "or":
             case "implies":
             case "iff":
                 var tmp = treeToHdr(tree.lvalue);
-                tmp += "& $";
+                tmp += "& ";
                 switch (tree.type) {
                     case "and": tmp += "\\land"; break;
                     case "or": tmp += "\\lor"; break;
                     case "implies": tmp += "\\to"; break;
                     case "iff": tmp += "\\leftrightarrow"; break;
                 }
-                tmp += "$ ";
+                tmp += " ";
                 tmp += treeToHdr(tree.rvalue);
                 return tmp;
         }
@@ -389,18 +389,18 @@ ttgen.makeLatexTableHeader = function(tree) {
 };
 
 ttgen.makeLatexTableRow = function(tree, line) {
-    var res = "  ";
+    var res = "    ";
     var sym = ttgen.getSymbols(tree);
     var val = ttgen.getValuation(sym, line);
     ttgen.evaluate(tree, val);
     var tmp = [];
     for (var i = 1; i <= sym.length; ++i) {
-        tmp.push((line & (1 << (sym.length-i)))?"$1$":"$0$");
+        tmp.push((line & (1 << (sym.length-i)))?"1":"0");
     }
     res += tmp.join(" & ") + " ";
 
     var entry = function(tree) {
-        return "& $" + (tree.truthValue?"1":"0") + "$ ";
+        return "& " + (tree.truthValue?"1":"0") + " ";
     };
 
     var helper = function(tree) {
@@ -422,7 +422,7 @@ ttgen.makeLatexTableRow = function(tree, line) {
 };
 
 ttgen.makeLatexTable = function(tree) {
-    var res = "\\begin{tabular}";
+    var res = "\\[\n  \\begin{array}";
 
     var sym = ttgen.getSymbols(tree);
     res += "{" + "c".repeat(sym.length) + "|";
@@ -439,7 +439,7 @@ ttgen.makeLatexTable = function(tree) {
     };
     res += "c".repeat(treeSize(tree)) + "}\n";
     res += ttgen.makeLatexTableHeader(tree);
-    res += "\\\\\n  \\hline\n";
+    res += "\\\\\n    \\hline\n";
     
     for (var i = 0; i < Math.pow(2, sym.length); ++i) {
         res += ttgen.makeLatexTableRow(tree, i);
@@ -450,7 +450,7 @@ ttgen.makeLatexTable = function(tree) {
         }
     }
 
-    res += "\\end{tabular}";
+    res += "  \\end{array}\n\\]";
     return res;
 };
 

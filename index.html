@@ -12,6 +12,7 @@
                 if (tree && (tree.type !== "error")) {
                     document.getElementById("theTable").innerHTML = ttgen.makeHTMLTable(tree);
                     document.getElementById("theLatex").value = ttgen.makeLatexTable(tree);
+                    document.getElementById("theTable").innerHTML = ttgen.makeLatexTable(tree);
                 } else {
                     document.getElementById("theTable").innerHTML = "";
                     document.getElementById("theLatex").value = "";
@@ -42,7 +43,7 @@
     <body onload="initialize()">
         <p>Enter formula: <input type="text" id="input"></p>
         <p><div id="theTable"></div></p>
-        <p><textarea id="theLatex" readonly="readonly" rows="12"></textarea></div></p>
+        <p><textarea id="theLatex" readonly="readonly" rows="14"></textarea></div></p>
     </body>
 </html>
 
