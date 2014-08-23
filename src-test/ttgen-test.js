@@ -307,3 +307,112 @@ EvaluatorTest.prototype.test = function() {
     }
 };
 
+EvaluatorTest.prototype.testRepeat = function() {
+    assertEquals("", "".repeat(0));
+    assertEquals("", "".repeat(1));
+    assertEquals("", "".repeat(2));
+    assertEquals("", "ab".repeat(0));
+    assertEquals("ab", "ab".repeat(1));
+    assertEquals("abab", "ab".repeat(2));
+};
+
+var TableGenTest = TestCase("TableGenTest");
+
+var remakeString = function(tree) {
+    var pars = function(par, s) {
+        if (par < 0)
+            return "(".repeat(-par) + s;
+        if (par > 0)
+            return s + ")".repeat(par);
+        return s;
+    };
+
+    switch (tree.type) {
+        case "id":
+            return pars(tree.par, tree.value);
+        case "not":
+            return pars(tree.par, "!") + remakeString(tree.value);
+        case "and":
+            return remakeString(tree.lvalue) + " & " + remakeString(tree.rvalue);
+        case "or":
+            return remakeString(tree.lvalue) + " | " + remakeString(tree.rvalue);
+        case "implies":
+            return remakeString(tree.lvalue) + " -> " + remakeString(tree.rvalue);
+        case "iff":
+            return remakeString(tree.lvalue) + " <-> " + remakeString(tree.rvalue);
+    }
+};
+
+TableGenTest.prototype.testParens = function() {
+    var tree = ttgen.parse("A");
+    ttgen.evaluateParens(tree);
+    assertEquals("A", remakeString(tree));
+
+    tree = ttgen.parse("A\\land B");
+    ttgen.evaluateParens(tree);
+    assertEquals("(A & B)", remakeString(tree));
+
+    tree = ttgen.parse("A\\land\\lnot B");
+    ttgen.evaluateParens(tree);
+    assertEquals("(A & !B)", remakeString(tree));
+
+    tree = ttgen.parse("\\lnot A\\land B");
+    ttgen.evaluateParens(tree);
+    assertEquals("(!A & B)", remakeString(tree));
+
+    tree = ttgen.parse("\\lnot(A\\land B)");
+    ttgen.evaluateParens(tree);
+    assertEquals("!(A & B)", remakeString(tree));
+
+    tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
+    ttgen.evaluateParens(tree);
+    assertEquals("((!(A & B) | (!A & !B)) -> !C)", remakeString(tree));
+};
+
+TableGenTest.prototype.testHTMLHeader = function() {
+    var tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
+    var expected = 
+        "<tr>\n" +
+        "  <th>A</th>\n" +
+        "  <th>B</th>\n" +
+        "  <th>C</th>\n" +
+        "  <th>((&not;</th>\n" +
+        "  <th>(A</th>\n" +
+        "  <th>&and;</th>\n" +
+        "  <th>B)</th>\n" +
+        "  <th>&or;</th>\n" +
+        "  <th>(&not;</th>\n" +
+        "  <th>A</th>\n" +
+        "  <th>&and;</th>\n" +
+        "  <th>&not;</th>\n" +
+        "  <th>B))</th>\n" +
+        "  <th>&rarr;</th>\n" +
+        "  <th>&not;</th>\n" +
+        "  <th>C)</th>\n" +
+        "</tr>\n";
+    assertEquals(expected, ttgen.makeHTMLTableHeader(tree));
+};
+
+TableGenTest.prototype.testHTMLRow = function() {
+    var tree = ttgen.parse("A\\to B");
+    ttgen.evaluateParens(tree);
+    var expected = 
+        "<tr>\n" +
+        "  <td>0</td>\n" +
+        "  <td>1</td>\n" +
+        "  <td>0</td>\n" +
+        "  <td>1</td>\n" +
+        "  <td>1</td>\n" +
+        "</tr>\n";
+    assertEquals(expected, ttgen.makeHTMLTableRow(tree, 1));
+    expected = 
+        "<tr>\n" +
+        "  <td>1</td>\n" +
+        "  <td>0</td>\n" +
+        "  <td>1</td>\n" +
+        "  <td>0</td>\n" +
+        "  <td>0</td>\n" +
+        "</tr>\n";
+    assertEquals(expected, ttgen.makeHTMLTableRow(tree, 2));
+};
+

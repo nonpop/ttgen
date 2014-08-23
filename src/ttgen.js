@@ -2,6 +2,10 @@
 
 var ttgen = {};
 
+ttgen.foo = function() {
+    return "bar";
+};
+
 ttgen.Tokenizer = function(input) {
     this.input = input;
     this.position = 0;
@@ -219,5 +223,134 @@ ttgen.evaluate = function(tree, val) {
             tree.truthValue = tree.lvalue.truthValue === tree.rvalue.truthValue;
             break;
     }
+};
+
+String.prototype.repeat = function(n) {
+    return new Array(n+1).join(this);
+}
+
+// To each node in the tree associate a property "par"
+// which tells how many parentheses should be printed before/after
+// this node. Negative "par" means print before, positive means print after.
+ttgen.evaluateParens = function(tree) {
+    var helper = function(tree, par) {
+        switch (tree.type) {
+            case "id":
+                tree.par = par;
+                break;
+
+            case "not":
+                if (par < 0) {
+                    tree.par = par;
+                    helper(tree.value, 0);
+                } else {
+                    tree.par = 0;
+                    helper(tree.value, par);
+                }
+                break;
+
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                tree.par = 0;
+                if (par < 0) {
+                    helper(tree.lvalue, par-1);
+                    helper(tree.rvalue, 1);
+                } else {
+                    helper(tree.lvalue, -1);
+                    helper(tree.rvalue, par+1);
+                }
+                break;
+        }
+    };
+    helper(tree, 0);
+};
+
+ttgen.parHelper = function(par, s) {
+    if (par < 0)
+        return "(".repeat(-par) + s;
+    if (par > 0)
+        return s + ")".repeat(par);
+    return s;
+};
+
+ttgen.makeHTMLTableHeader = function(tree) {
+    var res = "<tr>\n";
+    var sym = ttgen.getSymbols(tree);
+    sym.forEach(function(s) {
+        res += "  <th>" + s + "</th>\n";
+    });
+
+    ttgen.evaluateParens(tree);
+    var treeToHdr = function(tree) {
+        switch (tree.type) {
+            case "id":
+                return "  <th>" + ttgen.parHelper(tree.par, tree.value) + "</th>\n";
+            case "not":
+                return "  <th>" + ttgen.parHelper(tree.par, "&not;") + "</th>\n" + treeToHdr(tree.value);
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                var tmp = treeToHdr(tree.lvalue);
+                tmp += "  <th>";
+                switch (tree.type) {
+                    case "and": tmp += "&and;"; break;
+                    case "or": tmp += "&or;"; break;
+                    case "implies": tmp += "&rarr;"; break;
+                    case "iff": tmp += "&harr;"; break;
+                }
+                tmp += "</th>\n";
+                tmp += treeToHdr(tree.rvalue);
+                return tmp;
+        }
+    };
+    res += treeToHdr(tree);
+    res += "</tr>\n";
+    return res;
+};
+
+ttgen.makeHTMLTableRow = function(tree, line) {
+    var res = "<tr>\n";
+    var sym = ttgen.getSymbols(tree);
+    var val = ttgen.getValuation(sym, line);
+    ttgen.evaluate(tree, val);
+    for (var i = 1; i <= sym.length; ++i) {
+        res += "  <td>" + ((line & (1 << (sym.length-i)))?"1":"0") + "</td>\n";
+    }
+
+    var entry = function(tree) {
+        return "  <td>" + (tree.truthValue?"1":"0") + "</td>\n";
+    };
+
+    var helper = function(tree) {
+        switch (tree.type) {
+            case "id":
+                return entry(tree);
+            case "not":
+                return entry(tree) + helper(tree.value);
+            case "and":
+            case "or":
+            case "implies":
+            case "iff":
+                return helper(tree.lvalue) + entry(tree) + helper(tree.rvalue);
+
+        }
+    };
+    res += helper(tree);
+    res += "</tr>\n";
+    return res;
+};
+
+ttgen.makeHTMLTable = function(tree) {
+    var res = "<table>\n";
+    res += ttgen.makeHTMLTableHeader(tree);
+    var sym = ttgen.getSymbols(tree);
+    for (var i = 0; i < Math.pow(2, sym.length); ++i) {
+        res += ttgen.makeHTMLTableRow(tree, i);
+    }
+    res += "</table>\n";
+    return res;
 };
 

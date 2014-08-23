@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="src/ttgen.css">
+        <script src="src/ttgen.js"></script>
+        <script>
+            var generateHTML = function() {
+                var s = document.getElementById("input").value;
+                var tree = ttgen.parse(s);
+                if (tree && (tree.type !== "error")) {
+                    var t = ttgen.makeHTMLTable(tree);
+                    document.getElementById("theTable").innerHTML = t;
+                }
+            };
+        </script>
+        <title>Truth Table Generator</title>
+    </head>
+    <body>
+        <input type="text" id="input" onkeyup="generateHTML()">
+        <div id="theTable"></div>
+    </body>
+</html>
+
