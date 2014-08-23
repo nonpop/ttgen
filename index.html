@@ -10,9 +10,9 @@
                 var s = document.getElementById("input").value;
                 var tree = ttgen.parse(s);
                 if (tree && (tree.type !== "error")) {
-                    document.getElementById("theTable").innerHTML = ttgen.makeHTMLTable(tree);
-                    document.getElementById("theLatex").value = ttgen.makeLatexTable(tree);
-                    document.getElementById("theTable").innerHTML = ttgen.makeLatexTable(tree);
+                    var t = ttgen.makeLatexTable(tree);
+                    document.getElementById("theTable").innerHTML = t;
+                    document.getElementById("theLatex").value = t;
                 } else {
                     document.getElementById("theTable").innerHTML = "";
                     document.getElementById("theLatex").value = "";
