@@ -185,3 +185,11 @@ ttgen.rawGetSymbols = function(tree) {
     }
 };
 
+ttgen.getValuation = function(symbols, tableLine) {
+    var res = {};
+    for (var i = 1; i <= symbols.length; ++i) {
+        res[symbols[i-1]] = (tableLine & (1 << (symbols.length - i)))?true:false;
+    }
+    return res;
+};
+
