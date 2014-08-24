@@ -215,6 +215,10 @@ ttgen.evaluate = function(tree, val) {
         case "id":
             tree.truthValue = val[tree.value];
             break;
+        case "not":
+            ttgen.evaluate(tree.value, val);
+            tree.truthValue = !tree.value.truthValue;
+            break;
         case "and":
             ttgen.evaluate(tree.lvalue, val);
             ttgen.evaluate(tree.rvalue, val);

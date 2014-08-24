@@ -236,6 +236,19 @@ EvaluatorTest.prototype.testId = function() {
     assertEquals(true, tree.truthValue);
 };
 
+EvaluatorTest.prototype.testNot = function() {
+    var tree = ttgen.parse("\\lnot A");
+    var sym = ttgen.getSymbols(tree);
+
+    var val = ttgen.getValuation(sym, 0);
+    ttgen.evaluate(tree, val);
+    assertEquals(true, tree.truthValue);
+
+    val = ttgen.getValuation(sym, 1);
+    ttgen.evaluate(tree, val);
+    assertEquals(false, tree.truthValue);
+};
+
 EvaluatorTest.prototype.testAnd = function() {
     var tree = ttgen.parse("A\\land B");
     var sym = ttgen.getSymbols(tree);
