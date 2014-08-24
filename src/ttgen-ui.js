@@ -34,8 +34,8 @@ var checkForUpdates = function() {
 };
 
 var initialize = function() {
-    //document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
-    document.getElementById("input").value = "A\\to B";
+    document.getElementById("input").value = "(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))";
+    //document.getElementById("input").value = "A\\to B";
     document.getElementById("input").focus();
     document.getElementById("input").select();
     restoreSettings();
