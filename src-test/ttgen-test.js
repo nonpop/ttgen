@@ -371,50 +371,22 @@ TableGenTest.prototype.testParens = function() {
     assertEquals("((!(A & B) | (!A & !B)) -> !C)", remakeString(tree));
 };
 
-TableGenTest.prototype.testHTMLHeader = function() {
+TableGenTest.prototype.testLatexHeader = function() {
     var tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
-    var expected = 
-        "<tr>\n" +
-        "  <th>A</th>\n" +
-        "  <th>B</th>\n" +
-        "  <th>C</th>\n" +
-        "  <th>((&not;</th>\n" +
-        "  <th>(A</th>\n" +
-        "  <th>&and;</th>\n" +
-        "  <th>B)</th>\n" +
-        "  <th>&or;</th>\n" +
-        "  <th>(&not;</th>\n" +
-        "  <th>A</th>\n" +
-        "  <th>&and;</th>\n" +
-        "  <th>&not;</th>\n" +
-        "  <th>B))</th>\n" +
-        "  <th>&rarr;</th>\n" +
-        "  <th>&not;</th>\n" +
-        "  <th>C)</th>\n" +
-        "</tr>\n";
-    assertEquals(expected, ttgen.makeHTMLTableHeader(tree));
+    var expected = "    A & B & C & ((\\lnot & (A & \\land & B) & \\lor & (\\lnot & A & \\land & \\lnot & B)) & \\to & \\lnot & C) ";
+    assertEquals(expected, ttgen.makeLatexTableHeader(tree));
 };
 
-TableGenTest.prototype.testHTMLRow = function() {
+TableGenTest.prototype.testLatexRows = function() {
     var tree = ttgen.parse("A\\to B");
     ttgen.evaluateParens(tree);
-    var expected = 
-        "<tr>\n" +
-        "  <td>0</td>\n" +
-        "  <td>1</td>\n" +
-        "  <td>0</td>\n" +
-        "  <td>1</td>\n" +
-        "  <td>1</td>\n" +
-        "</tr>\n";
-    assertEquals(expected, ttgen.makeHTMLTableRow(tree, 1));
-    expected = 
-        "<tr>\n" +
-        "  <td>1</td>\n" +
-        "  <td>0</td>\n" +
-        "  <td>1</td>\n" +
-        "  <td>0</td>\n" +
-        "  <td>0</td>\n" +
-        "</tr>\n";
-    assertEquals(expected, ttgen.makeHTMLTableRow(tree, 2));
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 4; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        var values = [ val["A"], val["B"], val["A"], !val["A"] || val["B"], val["B"] ];
+        var expected = "    " + values.map(function(v) { return v? "1" : "0" }).join(" & ") + " ";
+        assertEquals(expected, ttgen.makeLatexTableRow(tree, i));
+    }
 };
 
