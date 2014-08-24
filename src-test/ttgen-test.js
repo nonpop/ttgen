@@ -289,6 +289,28 @@ EvaluatorTest.prototype.testIff = function() {
     }
 };
 
+EvaluatorTest.prototype.testNand = function() {
+    var tree = ttgen.parse("A\\mid B");
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 4; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(!(val["A"] && val["B"]), tree.truthValue);
+    }
+};
+
+EvaluatorTest.prototype.testNor = function() {
+    var tree = ttgen.parse("A\\downarrow B");
+    var sym = ttgen.getSymbols(tree);
+
+    for (var i = 0; i < 4; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(!(val["A"] || val["B"]), tree.truthValue);
+    }
+};
+
 EvaluatorTest.prototype.test = function() {
     // (A -> (B -> C)) -> ((A -> B) -> (A -> C))
     var tree = ttgen.parse("(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))");

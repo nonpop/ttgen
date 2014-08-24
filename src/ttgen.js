@@ -68,6 +68,11 @@ ttgen.Tokenizer.prototype.parseCommand = function(pos) {
             return { type: "implies", pos: pos };
         case "\\leftrightarrow":
             return { type: "iff", pos: pos };
+        case "\\mid":
+        //case "\\uparrow":
+            return { type: "nand", pos: pos };
+        case "\\downarrow":
+            return { type: "nor", pos: pos };
         default:
             return { type: "id", value: cmd, pos: pos };
     }
@@ -143,6 +148,8 @@ ttgen.parse_binop = function(tok) {
         case "or":
         case "implies":
         case "iff":
+        case "nand":
+        case "nor":
             break;
         default:
             return { type: "error", pos: op.pos, desc: "syntax error at " + op.pos };
@@ -186,6 +193,8 @@ ttgen.rawGetSymbols = function(tree) {
         case "or":
         case "implies":
         case "iff":
+        case "nand":
+        case "nor":
             return ttgen.rawGetSymbols(tree.lvalue).concat(ttgen.rawGetSymbols(tree.rvalue));
         default:
             return undefined;
@@ -220,24 +229,25 @@ ttgen.evaluate = function(tree, val) {
             tree.truthValue = !tree.value.truthValue;
             break;
         case "and":
-            ttgen.evaluate(tree.lvalue, val);
-            ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = tree.lvalue.truthValue && tree.rvalue.truthValue;
-            break;
         case "or":
-            ttgen.evaluate(tree.lvalue, val);
-            ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = tree.lvalue.truthValue || tree.rvalue.truthValue;
-            break;
         case "implies":
-            ttgen.evaluate(tree.lvalue, val);
-            ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = !tree.lvalue.truthValue || tree.rvalue.truthValue;
-            break;
         case "iff":
+        case "nand":
+        case "nor":
             ttgen.evaluate(tree.lvalue, val);
             ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = tree.lvalue.truthValue === tree.rvalue.truthValue;
+            var l = tree.lvalue.truthValue;
+            var r = tree.rvalue.truthValue;
+            var p;
+            switch (tree.type) {
+                case "and": p = l && r; break;
+                case "or": p = l || r; break;
+                case "implies": p = !l || r; break;
+                case "iff": p = l === r; break;
+                case "nand": p = !(l && r); break;
+                case "nor": p = !(l || r); break;
+            }
+            tree.truthValue = p;
             break;
     }
 };
@@ -270,6 +280,8 @@ ttgen.evaluateParens = function(tree) {
             case "or":
             case "implies":
             case "iff":
+            case "nand":
+            case "nor":
                 tree.par = 0;
                 if (par < 0) {
                     helper(tree.lvalue, par-1);
@@ -307,6 +319,8 @@ ttgen.makeLatexTableHeader = function(tree) {
             case "or":
             case "implies":
             case "iff":
+            case "nand":
+            case "nor":
                 var tmp = treeToHdr(tree.lvalue);
                 tmp += "& ";
                 switch (tree.type) {
@@ -314,6 +328,8 @@ ttgen.makeLatexTableHeader = function(tree) {
                     case "or": tmp += "\\lor"; break;
                     case "implies": tmp += "\\to"; break;
                     case "iff": tmp += "\\leftrightarrow"; break;
+                    case "nand": tmp += "\\mid"; break;
+                    case "nor": tmp += "\\downarrow"; break;
                 }
                 tmp += " ";
                 tmp += treeToHdr(tree.rvalue);
@@ -349,6 +365,8 @@ ttgen.makeLatexTableRow = function(tree, line) {
             case "or":
             case "implies":
             case "iff":
+            case "nand":
+            case "nor":
                 return helper(tree.lvalue) + entry(tree) + helper(tree.rvalue);
 
         }
@@ -370,6 +388,8 @@ ttgen.makeLatexTable = function(tree) {
             case "or":
             case "implies":
             case "iff":
+            case "nand":
+            case "nor":
                         return 1 + treeSize(tree.lvalue) + treeSize(tree.rvalue);
         }
     };
