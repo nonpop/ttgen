@@ -222,17 +222,17 @@ ttgen.evaluate = function(tree, val) {
         case "and":
             ttgen.evaluate(tree.lvalue, val);
             ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = tree.lvalue.truthValue & tree.rvalue.truthValue;
+            tree.truthValue = tree.lvalue.truthValue && tree.rvalue.truthValue;
             break;
         case "or":
             ttgen.evaluate(tree.lvalue, val);
             ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = tree.lvalue.truthValue | tree.rvalue.truthValue;
+            tree.truthValue = tree.lvalue.truthValue || tree.rvalue.truthValue;
             break;
         case "implies":
             ttgen.evaluate(tree.lvalue, val);
             ttgen.evaluate(tree.rvalue, val);
-            tree.truthValue = !tree.lvalue.truthValue | tree.rvalue.truthValue;
+            tree.truthValue = !tree.lvalue.truthValue || tree.rvalue.truthValue;
             break;
         case "iff":
             ttgen.evaluate(tree.lvalue, val);
