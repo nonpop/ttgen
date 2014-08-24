@@ -298,6 +298,15 @@ EvaluatorTest.prototype.test = function() {
         ttgen.evaluate(tree, val);
         assertEquals(true, tree.truthValue);
     }
+
+    // (A -> B) -> (!B -> !A)
+    tree = ttgen.parse("(A\\to B)\\to(\\lnot B\\to\\lnot A)");
+    sym = ttgen.getSymbols(tree);
+    for (var i = 0; i < 4; ++i) {
+        var val = ttgen.getValuation(sym, i);
+        ttgen.evaluate(tree, val);
+        assertEquals(true, tree.truthValue);
+    }
 };
 
 EvaluatorTest.prototype.testRepeat = function() {
