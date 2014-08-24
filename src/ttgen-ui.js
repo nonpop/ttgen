@@ -5,9 +5,11 @@ var generateTables = function() {
         var t = ttgen.makeLatexTable(tree);
         document.getElementById("theTable").innerHTML = t;
         document.getElementById("theLatex").value = t;
+        document.getElementById("errorArea").innerHTML = "";
     } else {
         document.getElementById("theTable").innerHTML = "";
-    document.getElementById("theLatex").value = "";
+        document.getElementById("theLatex").value = "";
+        document.getElementById("errorArea").innerHTML = tree.desc || "Parse failed";
     }
     MathJax.Hub.Queue([ "Typeset", MathJax.Hub ]);
 };
