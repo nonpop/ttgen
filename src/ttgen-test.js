@@ -1,18 +1,20 @@
 "use strict";
 
-QUnit.test("Tokenizer.empty", function(assert) {
+QUnit.module("Tokenizer");
+
+QUnit.test("empty", function(assert) {
     var t = new ttgen.Tokenizer("");
     assert.deepEqual(t.input, "");
     assert.deepEqual(t.position, 0);
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testEmpty2", function(assert) {
+QUnit.test("testEmpty2", function(assert) {
     var t = new ttgen.Tokenizer("   ");
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testParens", function(assert) {
+QUnit.test("testParens", function(assert) {
     var t = new ttgen.Tokenizer("())()");
     assert.deepEqual(t.next().type, "lparen");
     assert.deepEqual(t.next().type, "rparen");
@@ -22,7 +24,7 @@ QUnit.test("Tokenizer.testParens", function(assert) {
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testId", function(assert) {
+QUnit.test("testId", function(assert) {
     var t = new ttgen.Tokenizer("hello");
     var next = t.next();
     assert.deepEqual(next.type, "id");
@@ -30,7 +32,7 @@ QUnit.test("Tokenizer.testId", function(assert) {
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testId2", function(assert) {
+QUnit.test("testId2", function(assert) {
     var t = new ttgen.Tokenizer("  hello hi() hey   ");
     assert.deepEqual(t.next(), { type: "id", value: "hello", pos: 2 });
     assert.deepEqual(t.next(), { type: "id", value: "hi", pos: 8 });
@@ -40,19 +42,19 @@ QUnit.test("Tokenizer.testId2", function(assert) {
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testCmd", function(assert) {
+QUnit.test("testCmd", function(assert) {
     var t = new ttgen.Tokenizer("\\vee");
     assert.deepEqual(t.next().type, "or");
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.testCmd2", function(assert) {
+QUnit.test("testCmd2", function(assert) {
     var t = new ttgen.Tokenizer("\\veee");
     assert.deepEqual(t.next(), { type: "id", value: "\\veee", pos: 0});
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Tokenizer.test", function(assert) {
+QUnit.test("test", function(assert) {
     var t = new ttgen.Tokenizer("  (p_0\\land(p_1\\to\\p_{2}) ) ");
     assert.deepEqual(t.next(), { type: "lparen", pos: 2 });
     assert.deepEqual(t.next(), { type: "id", value: "p_0", pos: 3 });
@@ -66,11 +68,13 @@ QUnit.test("Tokenizer.test", function(assert) {
     assert.deepEqual(t.next(), undefined);
 });
 
-QUnit.test("Parser.testEmpty", function(assert) {
+QUnit.module("Parser");
+
+QUnit.test("testEmpty", function(assert) {
     assert.deepEqual(ttgen.parse(""), undefined);
 });
 
-QUnit.test("Parser.testId", function(assert) {
+QUnit.test("testId", function(assert) {
     assert.deepEqual(ttgen.parse("p_0"), { type: "id", value: "p_0" });
     assert.deepEqual(ttgen.parse(" p_0  "), { type: "id", value: "p_0" });
 
@@ -87,7 +91,7 @@ QUnit.test("Parser.testId", function(assert) {
     assert.deepEqual(e.pos, 4);
 });
 
-QUnit.test("Parser.testNot", function(assert) {
+QUnit.test("testNot", function(assert) {
     assert.deepEqual(ttgen.parse("\\lnot A"), { type: "not", value: { type: "id", value: "A" } });
     assert.deepEqual(ttgen.parse("\\neg \\lnot A"), { type: "not", value: { type: "not", value: { type: "id", value: "A" } } });
     var e = ttgen.parse("\\lnot A B");
@@ -95,7 +99,7 @@ QUnit.test("Parser.testNot", function(assert) {
     assert.deepEqual(e.pos, 8);
 });
 
-QUnit.test("Parser.testAnd", function(assert) {
+QUnit.test("testAnd", function(assert) {
     var r = ttgen.parse("(A\\land B)");
     assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
 
@@ -136,12 +140,12 @@ QUnit.test("Parser.testAnd", function(assert) {
     });
 });
 
-QUnit.test("Parser.testImplParens", function(assert) {
+QUnit.test("testImplParens", function(assert) {
     var r = ttgen.parse("A\\land B");
     assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
 });
 
-QUnit.test("Parser.test", function(assert) {
+QUnit.test("test", function(assert) {
     var r = ttgen.parse("(A\\to B)");
     assert.deepEqual(r, { type: "implies", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
 
@@ -173,7 +177,7 @@ QUnit.test("Parser.test", function(assert) {
     });
 });
 
-QUnit.test("Parser.testError", function(assert) {
+QUnit.test("testError", function(assert) {
     var r = ttgen.parse("A\\to B)");
     assert.deepEqual(r.type, "error");
     assert.deepEqual(r.pos, 6);
@@ -183,14 +187,16 @@ QUnit.test("Parser.testError", function(assert) {
     assert.deepEqual(r.pos, 12);
 });
 
-QUnit.test("Evaluator.testUniq", function(assert) {
+QUnit.module("Evaluator");
+
+QUnit.test("testUniq", function(assert) {
     assert.deepEqual([].uniq(), []);
     assert.deepEqual(["A","B"].uniq(), ["A","B"]);
     assert.deepEqual(["A","B","A","B"].sort().uniq(), ["A","B"]);
     assert.deepEqual(["C","B","A","A","B","C"].sort().uniq(), ["A","B","C"]);
 });
 
-QUnit.test("Evaluator.testSymbols", function(assert) {
+QUnit.test("testSymbols", function(assert) {
     assert.deepEqual(ttgen.getSymbols(ttgen.parse("A")), ["A"]);
     assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land B")), ["A","B"]);
     assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land (B\\lor C)")), ["A","B","C"]);
@@ -200,7 +206,7 @@ QUnit.test("Evaluator.testSymbols", function(assert) {
     assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land A")), ["A"]);
 });
 
-QUnit.test("Evaluator.testValuation", function(assert) {
+QUnit.test("testValuation", function(assert) {
     var v = ttgen.getValuation(["A","B","C"], 0);
     assert.deepEqual(v["A"], false);
     assert.deepEqual(v["B"], false);
@@ -217,7 +223,7 @@ QUnit.test("Evaluator.testValuation", function(assert) {
     assert.deepEqual(v["C"], true);
 });
 
-QUnit.test("Evaluator.testId", function(assert) {
+QUnit.test("testId", function(assert) {
     var tree = ttgen.parse("A");
     var sym = ttgen.getSymbols(tree);
 
@@ -228,7 +234,7 @@ QUnit.test("Evaluator.testId", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testNot", function(assert) {
+QUnit.test("testNot", function(assert) {
     var tree = ttgen.parse("\\lnot A");
     var sym = ttgen.getSymbols(tree);
 
@@ -239,7 +245,7 @@ QUnit.test("Evaluator.testNot", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testAnd", function(assert) {
+QUnit.test("testAnd", function(assert) {
     var tree = ttgen.parse("A\\land B");
     var sym = ttgen.getSymbols(tree);
 
@@ -250,7 +256,7 @@ QUnit.test("Evaluator.testAnd", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testOr", function(assert) {
+QUnit.test("testOr", function(assert) {
     var tree = ttgen.parse("A\\lor B");
     var sym = ttgen.getSymbols(tree);
 
@@ -261,7 +267,7 @@ QUnit.test("Evaluator.testOr", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testImplies", function(assert) {
+QUnit.test("testImplies", function(assert) {
     var tree = ttgen.parse("A\\to B");
     var sym = ttgen.getSymbols(tree);
 
@@ -272,7 +278,7 @@ QUnit.test("Evaluator.testImplies", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testIff", function(assert) {
+QUnit.test("testIff", function(assert) {
     var tree = ttgen.parse("A\\leftrightarrow B");
     var sym = ttgen.getSymbols(tree);
 
@@ -283,7 +289,7 @@ QUnit.test("Evaluator.testIff", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testNand", function(assert) {
+QUnit.test("testNand", function(assert) {
     var tree = ttgen.parse("A\\mid B");
     var sym = ttgen.getSymbols(tree);
 
@@ -294,7 +300,7 @@ QUnit.test("Evaluator.testNand", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testNor", function(assert) {
+QUnit.test("testNor", function(assert) {
     var tree = ttgen.parse("A\\downarrow B");
     var sym = ttgen.getSymbols(tree);
 
@@ -305,7 +311,7 @@ QUnit.test("Evaluator.testNor", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.test", function(assert) {
+QUnit.test("test", function(assert) {
     // (A -> (B -> C)) -> ((A -> B) -> (A -> C))
     var tree = ttgen.parse("(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))");
     var sym = ttgen.getSymbols(tree);
@@ -325,7 +331,7 @@ QUnit.test("Evaluator.test", function(assert) {
     }
 });
 
-QUnit.test("Evaluator.testRepeat", function(assert) {
+QUnit.test("testRepeat", function(assert) {
     assert.deepEqual("".repeat(0), "");
     assert.deepEqual("".repeat(1), "");
     assert.deepEqual("".repeat(2), "");
@@ -333,6 +339,8 @@ QUnit.test("Evaluator.testRepeat", function(assert) {
     assert.deepEqual("ab".repeat(1), "ab");
     assert.deepEqual("ab".repeat(2), "abab");
 });
+
+QUnit.module("TableGen");
 
 var remakeString = function(tree) {
     var pars = function(par, s) {
@@ -359,7 +367,7 @@ var remakeString = function(tree) {
     }
 };
 
-QUnit.test("TableGen.testParens", function(assert) {
+QUnit.test("testParens", function(assert) {
     var tree = ttgen.parse("A");
     ttgen.evaluateParens(tree);
     assert.deepEqual(remakeString(tree), "A");
@@ -385,13 +393,13 @@ QUnit.test("TableGen.testParens", function(assert) {
     assert.deepEqual(remakeString(tree), "((!(A & B) | (!A & !B)) -> !C)");
 });
 
-QUnit.test("TableGen.testLatexHeader", function(assert) {
+QUnit.test("testLatexHeader", function(assert) {
     var tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
     var expected = "    A & B & C & ((\\lnot & (A & \\land & B) & \\lor & (\\lnot & A & \\land & \\lnot & B)) & \\to & \\lnot & C) ";
     assert.deepEqual(ttgen.makeLatexTableHeader(tree), expected);
 });
 
-QUnit.test("TableGen.testLatexRows", function(assert) {
+QUnit.test("testLatexRows", function(assert) {
     var tree = ttgen.parse("A\\to B");
     ttgen.evaluateParens(tree);
     var sym = ttgen.getSymbols(tree);
