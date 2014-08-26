@@ -10,17 +10,18 @@
         <title>Truth Table Generator</title>
     </head>
     <body>
-        <p>
-        <label>Enter formula: <input type="text" id="input"></label>
-        <div id="errorArea"></div>
-        <label><input type="checkbox" id="reverse-rows">Reverse rows</label>
-        <label><input type="checkbox" id="reverse-cols">Reverse proposition symbol columns</label>
-        <br>
-        <label>Symbol for <i>true</i>: <input type="text" id="true-symbol" size="5"></label>
-        <label>Symbol for <i>false</i>: <input type="text" id="false-symbol" size="5"></label>
-        <br>
-        <label><input type="checkbox" id="save-settings">Remember settings using cookies</label>
-        </p>
+        <form id="inputForm">
+            Formula: <input type="text" id="input">
+            <div id="errorArea"></div>
+            <button type="submit">Generate</button>
+            <label><input type="checkbox" id="reverse-rows">Reverse rows</label>
+            <label><input type="checkbox" id="reverse-cols">Reverse proposition symbol columns</label>
+            <br>
+            <label>Symbol for <i>true</i>: <input type="text" id="true-symbol" size="5"></label>
+            <label>Symbol for <i>false</i>: <input type="text" id="false-symbol" size="5"></label>
+            <br>
+            <label><input type="checkbox" id="save-settings">Remember settings using cookies</label>
+        </form>
         <p><div id="theTable"></div></p>
         <p><textarea id="theLatex" readonly="readonly" rows="14"></textarea></div></p>
     </body>

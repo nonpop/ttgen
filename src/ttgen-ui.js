@@ -17,23 +17,19 @@ ttgen.ui.generateTables = function() {
     MathJax.Hub.Queue([ "Typeset", MathJax.Hub ]);
 };
 
-ttgen.ui.lastInput = "";
-ttgen.ui.checkForUpdates = function() {
-    var s = $("#input").val();
+ttgen.ui.updateSettings = function() {
     if (
-            s !== ttgen.ui.lastInput || 
             ttgen.options.reverseCols !== $("#reverse-cols").prop("checked") ||
             ttgen.options.reverseRows !== $("#reverse-rows").prop("checked") ||
             ttgen.options.trueSymbol !== $("#true-symbol").val() ||
             ttgen.options.falseSymbol !== $("#false-symbol").val()
        ) {
-        ttgen.ui.lastInput = s;
         ttgen.options.reverseCols = $("#reverse-cols").prop("checked");
         ttgen.options.reverseRows = $("#reverse-rows").prop("checked");
         ttgen.options.trueSymbol = $("#true-symbol").val();
         ttgen.options.falseSymbol = $("#false-symbol").val();
-        ttgen.ui.generateTables();
     }
+    ttgen.ui.saveSettings();
 };
 
 ttgen.ui.initialize = function() {
@@ -42,7 +38,16 @@ ttgen.ui.initialize = function() {
     $("#input").focus();
     $("#input").select();
     ttgen.ui.restoreSettings();
-    setInterval("ttgen.ui.checkForUpdates()", 1500);
+    $("#inputForm").submit(function(e) {
+        e.preventDefault();     // otherwise the submit causes page reload (?)
+                                // which re-triggers document.ready()
+        ttgen.ui.generateTables();
+    });
+    $("#save-settings").change(ttgen.ui.updateSettings);
+    $("#reverse-cols").change(ttgen.ui.updateSettings);
+    $("#reverse-rows").change(ttgen.ui.updateSettings);
+    $("#true-symbol").change(ttgen.ui.updateSettings);
+    $("#false-symbol").change(ttgen.ui.updateSettings);
 };
 
 ttgen.ui.restoreSettings = function() {
@@ -64,17 +69,17 @@ ttgen.ui.restoreSettings = function() {
 
 ttgen.ui.saveSettings = function() {
     if ($("#save-settings").prop("checked")) {
-        setCookie("save-settings", true, 365);
-        setCookie("reverse-rows", $("#reverse-rows").prop("checked"), 365);
-        setCookie("reverse-cols", $("#reverse-cols").prop("checked"), 365);
-        setCookie("true-symbol", $("#true-symbol").val(), 365);
-        setCookie("false-symbol", $("#false-symbol").val(), 365);
+        ttgen.ui.setCookie("save-settings", true, 365);
+        ttgen.ui.setCookie("reverse-rows", $("#reverse-rows").prop("checked"), 365);
+        ttgen.ui.setCookie("reverse-cols", $("#reverse-cols").prop("checked"), 365);
+        ttgen.ui.setCookie("true-symbol", $("#true-symbol").val(), 365);
+        ttgen.ui.setCookie("false-symbol", $("#false-symbol").val(), 365);
     } else {
-        setCookie("save-settings", false, -1);
-        setCookie("reverse-rows", undefined, -1);
-        setCookie("reverse-cols", undefined, -1);
-        setCookie("true-symbol", undefined, -1);
-        setCookie("false-symbol", undefined, -1);
+        ttgen.ui.setCookie("save-settings", false, -1);
+        ttgen.ui.setCookie("reverse-rows", undefined, -1);
+        ttgen.ui.setCookie("reverse-cols", undefined, -1);
+        ttgen.ui.setCookie("true-symbol", undefined, -1);
+        ttgen.ui.setCookie("false-symbol", undefined, -1);
     }
 };
 
