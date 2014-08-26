@@ -97,3 +97,5 @@ function getCookie(cname) {
     return undefined;
 };
 
+$(initialize);
+

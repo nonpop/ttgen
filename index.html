@@ -3,22 +3,23 @@
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" type="text/css" href="src/ttgen.css">
+        <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script src="src/ttgen.js"></script>
         <script src="src/ttgen-ui.js"></script>
-        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <title>Truth Table Generator</title>
     </head>
-    <body onload="initialize()">
+    <body>
         <p>
         <label>Enter formula: <input type="text" id="input"></label>
         <div id="errorArea"></div>
-        <label><input type="checkbox" id="reverse-rows" onchange="saveSettings()">Reverse rows</label>
-        <label><input type="checkbox" id="reverse-cols" onchange="saveSettings()">Reverse proposition symbol columns</label>
+        <label><input type="checkbox" id="reverse-rows">Reverse rows</label>
+        <label><input type="checkbox" id="reverse-cols">Reverse proposition symbol columns</label>
         <br>
-        <label>Symbol for <i>true</i>: <input type="text" id="true-symbol" size="5" onchange="saveSettings()"></label>
-        <label>Symbol for <i>false</i>: <input type="text" id="false-symbol" size="5" onchange="saveSettings()"></label>
+        <label>Symbol for <i>true</i>: <input type="text" id="true-symbol" size="5"></label>
+        <label>Symbol for <i>false</i>: <input type="text" id="false-symbol" size="5"></label>
         <br>
-        <label><input type="checkbox" id="save-settings" onchange="saveSettings()">Remember settings using a cookie</label>
+        <label><input type="checkbox" id="save-settings">Remember settings using cookies</label>
         </p>
         <p><div id="theTable"></div></p>
         <p><textarea id="theLatex" readonly="readonly" rows="14"></textarea></div></p>
