@@ -1,110 +1,106 @@
 "use strict";
 
-var TokenizerTest = TestCase("TokenizerTest");
-
-TokenizerTest.prototype.testEmpty = function() {
+QUnit.test("Tokenizer.empty", function(assert) {
     var t = new ttgen.Tokenizer("");
-    assertEquals("", t.input);
-    assertEquals(0, t.position);
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.input, "");
+    assert.deepEqual(t.position, 0);
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testEmpty2 = function() {
+QUnit.test("Tokenizer.testEmpty2", function(assert) {
     var t = new ttgen.Tokenizer("   ");
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testParens = function() {
+QUnit.test("Tokenizer.testParens", function(assert) {
     var t = new ttgen.Tokenizer("())()");
-    assertEquals("lparen", t.next().type);
-    assertEquals("rparen", t.next().type);
-    assertEquals("rparen", t.next().type);
-    assertEquals("lparen", t.next().type);
-    assertEquals("rparen", t.next().type);
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next().type, "lparen");
+    assert.deepEqual(t.next().type, "rparen");
+    assert.deepEqual(t.next().type, "rparen");
+    assert.deepEqual(t.next().type, "lparen");
+    assert.deepEqual(t.next().type, "rparen");
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testId = function() {
+QUnit.test("Tokenizer.testId", function(assert) {
     var t = new ttgen.Tokenizer("hello");
     var next = t.next();
-    assertEquals("id", next.type);
-    assertEquals("hello", next.value);
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(next.type, "id");
+    assert.deepEqual(next.value, "hello");
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testId2 = function() {
+QUnit.test("Tokenizer.testId2", function(assert) {
     var t = new ttgen.Tokenizer("  hello hi() hey   ");
-    assertEquals({ type: "id", value: "hello", pos: 2 }, t.next());
-    assertEquals({ type: "id", value: "hi", pos: 8 }, t.next());
-    assertEquals({ type: "lparen", pos: 10 }, t.next());
-    assertEquals({ type: "rparen", pos: 11 }, t.next());
-    assertEquals({ type: "id", value: "hey", pos: 13 }, t.next());
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next(), { type: "id", value: "hello", pos: 2 });
+    assert.deepEqual(t.next(), { type: "id", value: "hi", pos: 8 });
+    assert.deepEqual(t.next(), { type: "lparen", pos: 10 });
+    assert.deepEqual(t.next(), { type: "rparen", pos: 11 });
+    assert.deepEqual(t.next(), { type: "id", value: "hey", pos: 13 });
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testCmd = function() {
+QUnit.test("Tokenizer.testCmd", function(assert) {
     var t = new ttgen.Tokenizer("\\vee");
-    assertEquals("or", t.next().type);
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next().type, "or");
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.testCmd2 = function() {
+QUnit.test("Tokenizer.testCmd2", function(assert) {
     var t = new ttgen.Tokenizer("\\veee");
-    assertEquals({ type: "id", value: "\\veee", pos: 0}, t.next());
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next(), { type: "id", value: "\\veee", pos: 0});
+    assert.deepEqual(t.next(), undefined);
+});
 
-TokenizerTest.prototype.test = function() {
+QUnit.test("Tokenizer.test", function(assert) {
     var t = new ttgen.Tokenizer("  (p_0\\land(p_1\\to\\p_{2}) ) ");
-    assertEquals({ type: "lparen", pos: 2 }, t.next());
-    assertEquals({ type: "id", value: "p_0", pos: 3 }, t.next());
-    assertEquals({ type: "and", pos: 6 }, t.next());
-    assertEquals({ type: "lparen", pos: 11 }, t.next());
-    assertEquals({ type: "id", value: "p_1", pos: 12 }, t.next());
-    assertEquals({ type: "implies", pos: 15 }, t.next());
-    assertEquals({ type: "id", value: "\\p_{2}", pos: 18 }, t.next());
-    assertEquals({ type: "rparen", pos: 24 }, t.next());
-    assertEquals({ type: "rparen", pos: 26 }, t.next());
-    assertEquals(undefined, t.next());
-};
+    assert.deepEqual(t.next(), { type: "lparen", pos: 2 });
+    assert.deepEqual(t.next(), { type: "id", value: "p_0", pos: 3 });
+    assert.deepEqual(t.next(), { type: "and", pos: 6 });
+    assert.deepEqual(t.next(), { type: "lparen", pos: 11 });
+    assert.deepEqual(t.next(), { type: "id", value: "p_1", pos: 12 });
+    assert.deepEqual(t.next(), { type: "implies", pos: 15 });
+    assert.deepEqual(t.next(), { type: "id", value: "\\p_{2}", pos: 18 });
+    assert.deepEqual(t.next(), { type: "rparen", pos: 24 });
+    assert.deepEqual(t.next(), { type: "rparen", pos: 26 });
+    assert.deepEqual(t.next(), undefined);
+});
 
-var ParserTest = TestCase("ParserTest");
+QUnit.test("Parser.testEmpty", function(assert) {
+    assert.deepEqual(ttgen.parse(""), undefined);
+});
 
-ParserTest.prototype.testEmpty = function() {
-    assertEquals(undefined, ttgen.parse(""));
-};
-
-ParserTest.prototype.testId = function() {
-    assertEquals({ type: "id", value: "p_0" }, ttgen.parse("p_0"));
-    assertEquals({ type: "id", value: "p_0" }, ttgen.parse(" p_0  "));
+QUnit.test("Parser.testId", function(assert) {
+    assert.deepEqual(ttgen.parse("p_0"), { type: "id", value: "p_0" });
+    assert.deepEqual(ttgen.parse(" p_0  "), { type: "id", value: "p_0" });
 
     var e = ttgen.parse(")");
-    assertEquals("error", e.type);
-    assertEquals(0, e.pos);
+    assert.deepEqual(e.type, "error");
+    assert.deepEqual(e.pos, 0);
 
     e = ttgen.parse("p_0)");
-    assertEquals("error", e.type);
-    assertEquals(3, e.pos);
+    assert.deepEqual(e.type, "error");
+    assert.deepEqual(e.pos, 3);
 
     e = ttgen.parse("p_0 p_0");
-    assertEquals("error", e.type);
-    assertEquals(4, e.pos);
-};
+    assert.deepEqual(e.type, "error");
+    assert.deepEqual(e.pos, 4);
+});
 
-ParserTest.prototype.testNot = function() {
-    assertEquals({ type: "not", value: { type: "id", value: "A" } }, ttgen.parse("\\lnot A"));
-    assertEquals({ type: "not", value: { type: "not", value: { type: "id", value: "A" } } }, ttgen.parse("\\neg \\lnot A"));
+QUnit.test("Parser.testNot", function(assert) {
+    assert.deepEqual(ttgen.parse("\\lnot A"), { type: "not", value: { type: "id", value: "A" } });
+    assert.deepEqual(ttgen.parse("\\neg \\lnot A"), { type: "not", value: { type: "not", value: { type: "id", value: "A" } } });
     var e = ttgen.parse("\\lnot A B");
-    assertEquals("error", e.type);
-    assertEquals(8, e.pos);
-};
+    assert.deepEqual(e.type, "error");
+    assert.deepEqual(e.pos, 8);
+});
 
-ParserTest.prototype.testAnd = function() {
+QUnit.test("Parser.testAnd", function(assert) {
     var r = ttgen.parse("(A\\land B)");
-    assertEquals({ type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
+    assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
 
     r = ttgen.parse("(A\\land\\lnot B)");
-    assertEquals({
+    assert.deepEqual(r, {
         type: "and",
         lvalue: {
             type: "id",
@@ -117,10 +113,10 @@ ParserTest.prototype.testAnd = function() {
                 value: "B"
             }
         }
-    }, r);
+    });
 
     r = ttgen.parse("(A\\land(B\\land C))");
-    assertEquals({
+    assert.deepEqual(r, {
         type: "and",
         lvalue: {
             type: "id",
@@ -137,20 +133,20 @@ ParserTest.prototype.testAnd = function() {
                 value: "C"
             }
         }
-    }, r);
-};
+    });
+});
 
-ParserTest.prototype.testImplParens = function() {
+QUnit.test("Parser.testImplParens", function(assert) {
     var r = ttgen.parse("A\\land B");
-    assertEquals({ type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
-};
+    assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
+});
 
-ParserTest.prototype.test = function() {
+QUnit.test("Parser.test", function(assert) {
     var r = ttgen.parse("(A\\to B)");
-    assertEquals({ type: "implies", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } }, r);
+    assert.deepEqual(r, { type: "implies", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
 
     r = ttgen.parse("A\\to( ( B_{10}\\land Cee)\\leftrightarrow A)");
-    assertEquals({
+    assert.deepEqual(r, {
         type: "implies",
         lvalue: {
             type: "id",
@@ -174,151 +170,149 @@ ParserTest.prototype.test = function() {
                 value: "A"
             }
         }
-    }, r);
-};
+    });
+});
 
-ParserTest.prototype.testError = function() {
+QUnit.test("Parser.testError", function(assert) {
     var r = ttgen.parse("A\\to B)");
-    assertEquals("error", r.type);
-    assertEquals(6, r.pos);
+    assert.deepEqual(r.type, "error");
+    assert.deepEqual(r.pos, 6);
 
     r = ttgen.parse("\\lnot(A\\to B");
-    assertEquals("error", r.type);
-    assertEquals(12, r.pos);
-};
+    assert.deepEqual(r.type, "error");
+    assert.deepEqual(r.pos, 12);
+});
 
-var EvaluatorTest = TestCase("EvaluatorTest");
+QUnit.test("Evaluator.testUniq", function(assert) {
+    assert.deepEqual([].uniq(), []);
+    assert.deepEqual(["A","B"].uniq(), ["A","B"]);
+    assert.deepEqual(["A","B","A","B"].sort().uniq(), ["A","B"]);
+    assert.deepEqual(["C","B","A","A","B","C"].sort().uniq(), ["A","B","C"]);
+});
 
-EvaluatorTest.prototype.testUniq = function() {
-    assertEquals([], [].uniq());
-    assertEquals(["A","B"], ["A","B"].uniq());
-    assertEquals(["A","B"], ["A","B","A","B"].sort().uniq());
-    assertEquals(["A","B","C"], ["C","B","A","A","B","C"].sort().uniq());
-};
+QUnit.test("Evaluator.testSymbols", function(assert) {
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("A")), ["A"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land B")), ["A","B"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land (B\\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land (\\lnot B\\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor B)")), ["A","B"]);
+    assert.deepEqual(ttgen.getSymbols(ttgen.parse("A\\land A")), ["A"]);
+});
 
-EvaluatorTest.prototype.testSymbols = function() {
-    assertEquals(["A"], ttgen.getSymbols(ttgen.parse("A")));
-    assertEquals(["A","B"], ttgen.getSymbols(ttgen.parse("A\\land B")));
-    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("A\\land (B\\lor C)")));
-    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("A\\land (\\lnot B\\lor C)")));
-    assertEquals(["A","B","C"], ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor C)")));
-    assertEquals(["A","B"], ttgen.getSymbols(ttgen.parse("B\\land (\\lnot A\\lor B)")));
-    assertEquals(["A"], ttgen.getSymbols(ttgen.parse("A\\land A")));
-};
-
-EvaluatorTest.prototype.testValuation = function() {
+QUnit.test("Evaluator.testValuation", function(assert) {
     var v = ttgen.getValuation(["A","B","C"], 0);
-    assertEquals(false, v["A"]);
-    assertEquals(false, v["B"]);
-    assertEquals(false, v["C"]);
+    assert.deepEqual(v["A"], false);
+    assert.deepEqual(v["B"], false);
+    assert.deepEqual(v["C"], false);
 
     var v = ttgen.getValuation(["A","B","C"], 2);
-    assertEquals(false, v["A"]);
-    assertEquals(true, v["B"]);
-    assertEquals(false, v["C"]);
+    assert.deepEqual(v["A"], false);
+    assert.deepEqual(v["B"], true);
+    assert.deepEqual(v["C"], false);
 
     var v = ttgen.getValuation(["A","B","C"], 7);
-    assertEquals(true, v["A"]);
-    assertEquals(true, v["B"]);
-    assertEquals(true, v["C"]);
-};
+    assert.deepEqual(v["A"], true);
+    assert.deepEqual(v["B"], true);
+    assert.deepEqual(v["C"], true);
+});
 
-EvaluatorTest.prototype.testId = function() {
+QUnit.test("Evaluator.testId", function(assert) {
     var tree = ttgen.parse("A");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 2; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(val["A"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, val["A"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testNot = function() {
+QUnit.test("Evaluator.testNot", function(assert) {
     var tree = ttgen.parse("\\lnot A");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 2; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(!val["A"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, !val["A"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testAnd = function() {
+QUnit.test("Evaluator.testAnd", function(assert) {
     var tree = ttgen.parse("A\\land B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(val["A"] && val["B"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, val["A"] && val["B"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testOr = function() {
+QUnit.test("Evaluator.testOr", function(assert) {
     var tree = ttgen.parse("A\\lor B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(val["A"] || val["B"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, val["A"] || val["B"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testImplies = function() {
+QUnit.test("Evaluator.testImplies", function(assert) {
     var tree = ttgen.parse("A\\to B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(!val["A"] || val["B"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, !val["A"] || val["B"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testIff = function() {
+QUnit.test("Evaluator.testIff", function(assert) {
     var tree = ttgen.parse("A\\leftrightarrow B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(val["A"] === val["B"], tree.truthValue);
+        assert.deepEqual(tree.truthValue, val["A"] === val["B"]);
     }
-};
+});
 
-EvaluatorTest.prototype.testNand = function() {
+QUnit.test("Evaluator.testNand", function(assert) {
     var tree = ttgen.parse("A\\mid B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(!(val["A"] && val["B"]), tree.truthValue);
+        assert.deepEqual(tree.truthValue, !(val["A"] && val["B"]));
     }
-};
+});
 
-EvaluatorTest.prototype.testNor = function() {
+QUnit.test("Evaluator.testNor", function(assert) {
     var tree = ttgen.parse("A\\downarrow B");
     var sym = ttgen.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(!(val["A"] || val["B"]), tree.truthValue);
+        assert.deepEqual(tree.truthValue, !(val["A"] || val["B"]));
     }
-};
+});
 
-EvaluatorTest.prototype.test = function() {
+QUnit.test("Evaluator.test", function(assert) {
     // (A -> (B -> C)) -> ((A -> B) -> (A -> C))
     var tree = ttgen.parse("(A\\to(B\\to C))\\to((A\\to B)\\to(A\\to C))");
     var sym = ttgen.getSymbols(tree);
     for (var i = 0; i < 8; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(true, tree.truthValue);
+        assert.deepEqual(tree.truthValue, true);
     }
 
     // (A -> B) -> (!B -> !A)
@@ -327,20 +321,18 @@ EvaluatorTest.prototype.test = function() {
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.getValuation(sym, i);
         ttgen.evaluate(tree, val);
-        assertEquals(true, tree.truthValue);
+        assert.deepEqual(tree.truthValue, true);
     }
-};
+});
 
-EvaluatorTest.prototype.testRepeat = function() {
-    assertEquals("", "".repeat(0));
-    assertEquals("", "".repeat(1));
-    assertEquals("", "".repeat(2));
-    assertEquals("", "ab".repeat(0));
-    assertEquals("ab", "ab".repeat(1));
-    assertEquals("abab", "ab".repeat(2));
-};
-
-var TableGenTest = TestCase("TableGenTest");
+QUnit.test("Evaluator.testRepeat", function(assert) {
+    assert.deepEqual("".repeat(0), "");
+    assert.deepEqual("".repeat(1), "");
+    assert.deepEqual("".repeat(2), "");
+    assert.deepEqual("ab".repeat(0), "");
+    assert.deepEqual("ab".repeat(1), "ab");
+    assert.deepEqual("ab".repeat(2), "abab");
+});
 
 var remakeString = function(tree) {
     var pars = function(par, s) {
@@ -367,39 +359,39 @@ var remakeString = function(tree) {
     }
 };
 
-TableGenTest.prototype.testParens = function() {
+QUnit.test("TableGen.testParens", function(assert) {
     var tree = ttgen.parse("A");
     ttgen.evaluateParens(tree);
-    assertEquals("A", remakeString(tree));
+    assert.deepEqual(remakeString(tree), "A");
 
     tree = ttgen.parse("A\\land B");
     ttgen.evaluateParens(tree);
-    assertEquals("(A & B)", remakeString(tree));
+    assert.deepEqual(remakeString(tree), "(A & B)");
 
     tree = ttgen.parse("A\\land\\lnot B");
     ttgen.evaluateParens(tree);
-    assertEquals("(A & !B)", remakeString(tree));
+    assert.deepEqual(remakeString(tree), "(A & !B)");
 
     tree = ttgen.parse("\\lnot A\\land B");
     ttgen.evaluateParens(tree);
-    assertEquals("(!A & B)", remakeString(tree));
+    assert.deepEqual(remakeString(tree), "(!A & B)");
 
     tree = ttgen.parse("\\lnot(A\\land B)");
     ttgen.evaluateParens(tree);
-    assertEquals("!(A & B)", remakeString(tree));
+    assert.deepEqual(remakeString(tree), "!(A & B)");
 
     tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
     ttgen.evaluateParens(tree);
-    assertEquals("((!(A & B) | (!A & !B)) -> !C)", remakeString(tree));
-};
+    assert.deepEqual(remakeString(tree), "((!(A & B) | (!A & !B)) -> !C)");
+});
 
-TableGenTest.prototype.testLatexHeader = function() {
+QUnit.test("TableGen.testLatexHeader", function(assert) {
     var tree = ttgen.parse("((\\lnot(A\\land B)\\lor(\\lnot A\\land\\lnot B))\\to\\lnot C)");
     var expected = "    A & B & C & ((\\lnot & (A & \\land & B) & \\lor & (\\lnot & A & \\land & \\lnot & B)) & \\to & \\lnot & C) ";
-    assertEquals(expected, ttgen.makeLatexTableHeader(tree));
-};
+    assert.deepEqual(ttgen.makeLatexTableHeader(tree), expected);
+});
 
-TableGenTest.prototype.testLatexRows = function() {
+QUnit.test("TableGen.testLatexRows", function(assert) {
     var tree = ttgen.parse("A\\to B");
     ttgen.evaluateParens(tree);
     var sym = ttgen.getSymbols(tree);
@@ -408,7 +400,7 @@ TableGenTest.prototype.testLatexRows = function() {
         var val = ttgen.getValuation(sym, i);
         var values = [ val["A"], val["B"], val["A"], !val["A"] || val["B"], val["B"] ];
         var expected = "    " + values.map(function(v) { return v? "1" : "0" }).join(" & ") + " ";
-        assertEquals(expected, ttgen.makeLatexTableRow(tree, i));
+        assert.deepEqual(ttgen.makeLatexTableRow(tree, i), expected);
     }
-};
+});
 
