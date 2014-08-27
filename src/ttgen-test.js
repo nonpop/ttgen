@@ -382,6 +382,8 @@ QUnit.test("test", function(assert) {
     testTautology("(A -> B) -> (! B -> ! A)");
     testTautology("A -> 1");
     testTautology("0 -> A");
+    testTautology("1");
+    testTautology("! 0");
 });
 
 QUnit.module("tablegen");
@@ -442,5 +444,14 @@ QUnit.test("testLatexRows", function(assert) {
         var expected = "    " + values.map(function(v) { return v? "1" : "0" }).join(" & ") + " ";
         assert.deepEqual(ttgen.tablegen.makeLatexTableRow(tree, i), expected);
     }
+});
+
+QUnit.test("testSymbolless", function(assert) {
+    var tree = ttgen.parser.parse("1 \\to 0");
+    ttgen.tablegen.evaluateParens(tree);
+    var sym = ttgen.evaluator.getSymbols(tree);
+    var val = ttgen.evaluator.getValuation(sym, 0);
+    var expected = "     & 1 & 0 & 0 ";
+    assert.deepEqual(ttgen.tablegen.makeLatexTableRow(tree, 0), expected);
 });
 
