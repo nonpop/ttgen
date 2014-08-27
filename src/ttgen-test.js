@@ -2,71 +2,7 @@
 
 QUnit.module("Tokenizer");
 
-QUnit.test("empty", function(assert) {
-    var t = new ttgen.Tokenizer("");
-    assert.deepEqual(t.input, "");
-    assert.deepEqual(t.position, 0);
-    assert.deepEqual(t.next(), undefined);
-});
 
-QUnit.test("testEmpty2", function(assert) {
-    var t = new ttgen.Tokenizer("   ");
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("testParens", function(assert) {
-    var t = new ttgen.Tokenizer("())()");
-    assert.deepEqual(t.next().type, "lparen");
-    assert.deepEqual(t.next().type, "rparen");
-    assert.deepEqual(t.next().type, "rparen");
-    assert.deepEqual(t.next().type, "lparen");
-    assert.deepEqual(t.next().type, "rparen");
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("testId", function(assert) {
-    var t = new ttgen.Tokenizer("hello");
-    var next = t.next();
-    assert.deepEqual(next.type, "id");
-    assert.deepEqual(next.value, "hello");
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("testId2", function(assert) {
-    var t = new ttgen.Tokenizer("  hello hi() hey   ");
-    assert.deepEqual(t.next(), { type: "id", value: "hello", pos: 2 });
-    assert.deepEqual(t.next(), { type: "id", value: "hi", pos: 8 });
-    assert.deepEqual(t.next(), { type: "lparen", pos: 10 });
-    assert.deepEqual(t.next(), { type: "rparen", pos: 11 });
-    assert.deepEqual(t.next(), { type: "id", value: "hey", pos: 13 });
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("testCmd", function(assert) {
-    var t = new ttgen.Tokenizer("\\vee");
-    assert.deepEqual(t.next().type, "or");
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("testCmd2", function(assert) {
-    var t = new ttgen.Tokenizer("\\veee");
-    assert.deepEqual(t.next(), { type: "id", value: "\\veee", pos: 0});
-    assert.deepEqual(t.next(), undefined);
-});
-
-QUnit.test("test", function(assert) {
-    var t = new ttgen.Tokenizer("  (p_0\\land(p_1\\to\\p_{2}) ) ");
-    assert.deepEqual(t.next(), { type: "lparen", pos: 2 });
-    assert.deepEqual(t.next(), { type: "id", value: "p_0", pos: 3 });
-    assert.deepEqual(t.next(), { type: "and", pos: 6 });
-    assert.deepEqual(t.next(), { type: "lparen", pos: 11 });
-    assert.deepEqual(t.next(), { type: "id", value: "p_1", pos: 12 });
-    assert.deepEqual(t.next(), { type: "implies", pos: 15 });
-    assert.deepEqual(t.next(), { type: "id", value: "\\p_{2}", pos: 18 });
-    assert.deepEqual(t.next(), { type: "rparen", pos: 24 });
-    assert.deepEqual(t.next(), { type: "rparen", pos: 26 });
-    assert.deepEqual(t.next(), undefined);
-});
 
 QUnit.module("Parser");
 
@@ -410,5 +346,52 @@ QUnit.test("testLatexRows", function(assert) {
         var expected = "    " + values.map(function(v) { return v? "1" : "0" }).join(" & ") + " ";
         assert.deepEqual(ttgen.makeLatexTableRow(tree, i), expected);
     }
+});
+
+QUnit.module("tokenizer");
+
+QUnit.test("empty", function(assert) {
+    assert.deepEqual(ttgen.parser2.tokenize(""), []);
+    assert.deepEqual(ttgen.parser2.tokenize(" "), []);
+    assert.deepEqual(ttgen.parser2.tokenize("  "), []);
+});
+
+QUnit.test("parens", function(assert) {
+    assert.deepEqual(ttgen.parser2.tokenize("("), [ { pos: 0, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize(")"), [ { pos: 0, str: ")" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("(("), [ { pos: 0, str: "(" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("()"), [ { pos: 0, str: "(" }, { pos: 1, str: ")" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize(")("), [ { pos: 0, str: ")" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("  )( "), [ { pos: 2, str: ")" }, { pos: 3, str: "(" } ]);
+});
+
+QUnit.test("identifiers", function(assert) {
+    assert.deepEqual(ttgen.parser2.tokenize("hello"), [ { pos: 0, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("  hello  "), [ { pos: 2, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize(" hello  hi "), [ { pos: 1, str: "hello" }, { pos: 8, str: "hi" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("(hello )hi ( "), [
+            { pos: 0, str: "(" },
+            { pos: 1, str: "hello" },
+            { pos: 7, str: ")" },
+            { pos: 8, str: "hi" },
+            { pos: 11, str: "(" }
+    ]);
+    assert.deepEqual(ttgen.parser2.tokenize("(A \\land B)"), [
+            { pos: 0, str: "(" },
+            { pos: 1, str: "A" },
+            { pos: 3, str: "\\land" },
+            { pos: 9, str: "B" },
+            { pos: 10, str: ")" }
+    ]);
+    assert.deepEqual(ttgen.parser2.tokenize("(A& B)->C)-> C"), [
+            { pos: 0, str: "(" },
+            { pos: 1, str: "A&" },
+            { pos: 4, str: "B" },
+            { pos: 5, str: ")" },
+            { pos: 6, str: "->C" },
+            { pos: 9, str: ")" },
+            { pos: 10, str: "->" },
+            { pos: 13, str: "C" }
+    ]);
 });
 

@@ -410,3 +410,34 @@ ttgen.makeLatexTable = function(tree) {
     return res;
 };
 
+
+ttgen.parser2 = {
+    // A very simple tokenizer. The parentheses '(' and ')'
+    // and space ' ' are punctuation. The input is split into
+    // identifiers separated by punctuation, and space is removed.
+    // The return value is an array of objects { pos: x, str: y },
+    // where y is a token (parenthesis or identifier) and x its
+    // start position in the input.
+    tokenize: function(string) {
+        var len = string.length;
+        var res = [];
+        var i = 0;
+        for (; i < len; ++i) {
+            var c = string[i];
+            if (c === "(" || c === ")") {
+                res.push({ pos: i, str: string[i] });
+            } else if (c !== " ") {
+                var pos = i;
+                for (; i < len; ++i) {
+                    c = string[i];
+                    if (c === " " || c === "(" || c === ")")
+                        break;
+                }
+                res.push({ pos: pos, str: string.slice(pos, i) });
+                --i;    // otherwise the ++i in the for loop skips the punctuation
+            }
+        }
+        return res;
+    },
+};
+
