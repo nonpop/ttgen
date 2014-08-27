@@ -198,6 +198,15 @@ QUnit.test("binary", function(assert) {
             rsub: makeSymbol("C")
         }
     });
+    assert.deepEqual(ttgen.parser.parse("A & 1"), {
+        type: "and",
+        str: "&",
+        lsub: makeSymbol("A"),
+        rsub: {
+            type: "true",
+            str: "1"
+        }
+    });
 });
 
 QUnit.module("evaluator");
@@ -254,6 +263,18 @@ QUnit.test("testSymbol", function(assert) {
         ttgen.evaluator.evaluate(tree, val);
         assert.deepEqual(tree.value, val["A"]);
     }
+});
+
+QUnit.test("testTrue", function(assert) {
+    var tree = ttgen.parser.parse("\\top");
+    ttgen.evaluator.evaluate(tree, null);
+    assert.deepEqual(tree.value, true);
+});
+
+QUnit.test("testFalse", function(assert) {
+    var tree = ttgen.parser.parse("\\bot");
+    ttgen.evaluator.evaluate(tree, null);
+    assert.deepEqual(tree.value, false);
 });
 
 QUnit.test("testNot", function(assert) {
@@ -345,21 +366,22 @@ QUnit.test("testXor", function(assert) {
 });
 
 QUnit.test("test", function(assert) {
-    var tree = ttgen.parser.parse("(A -> (B -> C)) -> ((A -> B) -> (A -> C))");
-    var sym = ttgen.evaluator.getSymbols(tree);
-    for (var i = 0; i < 8; ++i) {
-        var val = ttgen.evaluator.getValuation(sym, i);
-        ttgen.evaluator.evaluate(tree, val);
-        assert.deepEqual(tree.value, true);
+    function testTautology(input) {
+        var tree = ttgen.parser.parse(input);
+        var sym = ttgen.evaluator.getSymbols(tree);
+        var rows = Math.pow(2, sym.length);
+        for (var i = 0; i < rows; ++i) {
+            var val = ttgen.evaluator.getValuation(sym, i);
+            ttgen.evaluator.evaluate(tree, val);
+            assert.deepEqual(tree.value, true);
+        }
     }
 
-    tree = ttgen.parser.parse("(A -> B) -> (! B -> ! A)");
-    sym = ttgen.evaluator.getSymbols(tree);
-    for (var i = 0; i < 4; ++i) {
-        var val = ttgen.evaluator.getValuation(sym, i);
-        ttgen.evaluator.evaluate(tree, val);
-        assert.deepEqual(tree.value, true);
-    }
+    testTautology("A -> (B -> A)");
+    testTautology("(A -> (B -> C)) -> ((A -> B) -> (A -> C))");
+    testTautology("(A -> B) -> (! B -> ! A)");
+    testTautology("A -> 1");
+    testTautology("0 -> A");
 });
 
 QUnit.module("tablegen");

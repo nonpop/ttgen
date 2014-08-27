@@ -313,6 +313,8 @@ ttgen.tablegen = {
         var recursiveEvaluateParens = function(tree, par) {
             switch (tree.type) {
                 case "symbol":
+                case "true":
+                case "false":
                     tree.par = par;
                     break;
 
@@ -357,6 +359,8 @@ ttgen.tablegen = {
         // map input token to latex version
         var entry = function(tree) {
             switch (tree.type) {
+                case "true": return tree.str;
+                case "false": return tree.str;
                 case "not": return "\\lnot";
                 case "and": return "\\land";
                 case "or": return "\\lor";
@@ -386,6 +390,8 @@ ttgen.tablegen = {
         var treeToHdr = function(tree) {
             if (tree.type === "symbol")
                 return "& " + ttgen.tablegen.parStr(tree.par, tree.str) + " ";
+            else if (tree.type === "true" || tree.type === "false")
+                return "& " + ttgen.tablegen.parStr(tree.par, entry(tree)) + " ";
             else if (tree.type === "not")
                 return "& " + ttgen.tablegen.parStr(tree.par, entry(tree)) + " " + treeToHdr(tree.sub);
             else
@@ -411,7 +417,7 @@ ttgen.tablegen = {
 
         ttgen.evaluator.evaluate(tree, val);
         var recursiveMakeRow = function(tree) {
-            if (tree.type === "symbol")
+            if (tree.type === "symbol" || tree.type === "true" || tree.type === "false")
                 return entry(tree);
             else if (tree.type === "not")
                 return entry(tree) + recursiveMakeRow(tree.sub);
@@ -428,7 +434,7 @@ ttgen.tablegen = {
         var sym = ttgen.evaluator.getSymbols(tree);
         res += "{" + "c".repeat(sym.length) + "|";
         var treeSize = function(tree) {
-            if (tree.type === "symbol")
+            if (tree.type === "symbol" || tree.type === "true" || tree.type === "false")
                 return 1;
             else if (tree.type === "not")
                 return 1 + treeSize(tree.sub);
