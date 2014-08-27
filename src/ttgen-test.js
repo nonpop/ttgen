@@ -395,3 +395,18 @@ QUnit.test("identifiers", function(assert) {
     ]);
 });
 
+QUnit.test("classifier", function(assert) {
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: ")" }),
+            { str: ")", type: ")" });
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: "&" }),
+            { str: "&", type: "and" });
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: "\\land" }),
+            { str: "\\land", type: "and" });
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: "IFF" }),
+            { str: "IFF", type: "iff" });
+});
+

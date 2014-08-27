@@ -439,5 +439,75 @@ ttgen.parser2 = {
         }
         return res;
     },
+
+    // In the following map the key is a connective and the value contains the
+    // identifiers and truth function for that connective.
+    tokenTypes: {
+        "true": {
+            ids: [ "TRUE", "1", "\\top" ],
+            arity: 0,
+            eval: function() { return true; }
+        },
+        "false": {
+            cds: [ "FALSE", "0", "\\bot" ],
+            arity: 0,
+            eval: function() { return false; }
+        },
+        "not": {
+            ids: [ "NOT", "!", "~", "\\lnot", "\\neg" ],
+            arity: 1,
+            eval: function(a) { return !a; }
+        },
+        "and": {
+            ids: [ "AND", "&", "\\land", "\\wedge" ],
+            arity: 2,
+            eval: function(a, b) { return a && b; }
+        },
+        "or": {
+            ids: [ "OR", "|", "\\lor", "\\vee" ],
+            arity: 2,
+            eval: function(a, b) { return a || b; }
+        },
+        "implies": {
+            ids: [ "IMPLIES", "->", "=>", "\\to", "\\rightarrow", "\\Rightarrow", "\\implies" ],
+            arity: 2,
+            eval: function(a, b) { return !a || b; }
+        },
+        "iff": {
+            ids: [ "IFF", "<->", "<=>", "\\leftrightarrow", "\\Leftrightarrow", "\\iff" ],
+            arity: 2,
+            eval: function(a, b) { return a === b; }
+        },
+        "nand": {
+            ids: [ "NAND", "\\mid" ],
+            arity: 2,
+            eval: function(a, b) { return !(a && b); }
+        },
+        "nor": {
+            ids: [ "NOR", "\\downarrow" ],
+            arity: 2,
+            eval: function(a, b) { return !(a || b); }
+        },
+        "xor": {
+            ids: [ "XOR" ],
+            arity: 2,
+            eval: function(a, b) { return a !== b; }
+        },
+    },
+
+    // Classifies a token by adding a 'type' property. Returns the modified token.
+    classifyToken: function(token) {
+        if (token.str === "(" || token.str === ")") {
+            token.type = token.str;
+        } else {
+            $.each(this.tokenTypes, function(k, v) {
+                if ($.inArray(token.str, v.ids) !== -1) {
+                    token.type = k;
+                    return false;   // break from $.each loop
+                }
+            });
+        }
+        return token;
+    },
 };
 
