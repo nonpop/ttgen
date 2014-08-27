@@ -3,9 +3,9 @@
 ttgen.ui = {};
 
 ttgen.ui.generateTables = function() {
-    var tree = ttgen.parse($("#input").val());
+    var tree = ttgen.parser.parse($("#input").val());
     if (tree && (tree.type !== "error")) {
-        var t = ttgen.makeLatexTable(tree);
+        var t = ttgen.tablegen.makeLatexTable(tree);
         $("#theTable").html(t);
         $("#theLatex").val(t);
         $("#errorArea").html("");
@@ -33,8 +33,8 @@ ttgen.ui.updateSettings = function() {
 };
 
 ttgen.ui.initialize = function() {
-    $("#input").val("(p_0\\to(p_1\\to p_2))\\to((p_0\\to p_1)\\to(p_0\\to p_2))");
-    //$("#input").value = "A\\to B";
+    $("#input").val("(p_0 -> (p_1 -> p_2)) -> ((p_0 -> p_1) -> (p_0 -> p_2))");
+    //$("#input").value = "A -> B";
     $("#input").focus();
     $("#input").select();
     ttgen.ui.restoreSettings();
