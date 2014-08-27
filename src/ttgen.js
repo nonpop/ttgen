@@ -9,95 +9,6 @@ ttgen.options = {
     falseSymbol : "0",
 };
 
-// remove duplicates from a sorted array
-Array.prototype.uniq = function() {
-    if (this.length === 0)
-        return this;
-    var res = [ this[0] ];
-    for (var i = 1; i < this.length; ++i) {
-        if (this[i-1] !== this[i])
-            res.push(this[i]);
-    }
-    return res;
-};
-
-ttgen.getSymbols = function(tree) {
-    return ttgen.rawGetSymbols(tree).sort().uniq();
-};
-
-ttgen.rawGetSymbols = function(tree) {
-    switch (tree.type) {
-        case "id":
-            return [ tree.value ];
-        case "not":
-            return ttgen.rawGetSymbols(tree.value);
-        case "and":
-        case "or":
-        case "implies":
-        case "iff":
-        case "nand":
-        case "nor":
-            return ttgen.rawGetSymbols(tree.lvalue).concat(ttgen.rawGetSymbols(tree.rvalue));
-        default:
-            return undefined;
-    }
-};
-
-ttgen.getValuation = function(symbols, tableLine) {
-    var res = {};
-    for (var i = 0; i < symbols.length; ++i) {
-        var col;
-        if (!ttgen.options.reverseCols)
-            col = i;
-        else
-            col = (symbols.length-1) - i;
-
-        var bit = tableLine & (1 << col);
-        if (ttgen.options.reverseRows)
-            bit = !bit;
-
-        res[symbols[i]] = bit? true : false;
-    }
-    return res;
-};
-
-ttgen.evaluate = function(tree, val) {
-    switch (tree.type) {
-        case "id":
-            tree.truthValue = val[tree.value];
-            break;
-        case "not":
-            ttgen.evaluate(tree.value, val);
-            tree.truthValue = !tree.value.truthValue;
-            break;
-        case "and":
-        case "or":
-        case "implies":
-        case "iff":
-        case "nand":
-        case "nor":
-            ttgen.evaluate(tree.lvalue, val);
-            ttgen.evaluate(tree.rvalue, val);
-            var l = tree.lvalue.truthValue;
-            var r = tree.rvalue.truthValue;
-            var p;
-            switch (tree.type) {
-                case "and": p = l && r; break;
-                case "or": p = l || r; break;
-                case "implies": p = !l || r; break;
-                case "iff": p = l === r; break;
-                case "nand": p = !(l && r); break;
-                case "nor": p = !(l || r); break;
-            }
-            tree.truthValue = p;
-            break;
-    }
-};
-
-String.prototype.repeat = function(n) {
-    return new Array(n+1).join(this);
-}
-
 // To each node in the tree associate a property "par"
 // which tells how many parentheses should be printed before/after
 // this node. Negative "par" means print before, positive means print after.
@@ -467,6 +378,85 @@ ttgen.parser2 = {
         if (tokens.length === 0)
             return null;
         return this.buildSyntaxTree(tokens);
+    },
+};
+
+// remove duplicates from a sorted array
+Array.prototype.uniq = function() {
+    if (this.length === 0)
+        return this;
+    var res = [ this[0] ];
+    for (var i = 1; i < this.length; ++i) {
+        if (this[i-1] !== this[i])
+            res.push(this[i]);
+    }
+    return res;
+};
+
+// repeat a string
+String.prototype.repeat = function(n) {
+    return new Array(n+1).join(this);
+}
+
+ttgen.evaluator = {
+    // return a sorted set of all the symbols in tree
+    getSymbols: function(tree) {
+        function recursiveGetSymbols(tree) {
+            switch (tree.type) {
+                case "symbol":
+                    return [ tree.name ];
+                case "true":
+                case "false":
+                    return [];
+                case "not":
+                    return recursiveGetSymbols(tree.sub);
+                default:
+                    return recursiveGetSymbols(tree.lsub).concat(recursiveGetSymbols(tree.rsub));
+            }
+        }
+        return recursiveGetSymbols(tree).sort().uniq();
+    },
+
+    // Assign a truth value to each symbol in "symbols",
+    // according to which tableRow we are considering.
+    getValuation: function(symbols, tableRow) {
+        var res = {};
+        for (var i = 0; i < symbols.length; ++i) {
+            var col;
+            if (!ttgen.options.reverseCols)
+                col = i;
+            else
+                col = (symbols.length-1) - i;
+
+            // TODO: how compatible are these bit operations?
+            var bit = tableRow & (1 << col);
+            if (ttgen.options.reverseRows)
+                bit = !bit;
+
+            res[symbols[i]] = bit? true : false;
+        }
+        return res;
+    },
+
+    // Add a "value" property to each node in "tree" describing
+    // the truth of each subtree accoring to "val".
+    evaluate: function(tree, val) {
+        if (tree.type === "symbol") {
+            tree.value = val[tree.name];
+        } else {
+            var tokenData = ttgen.parser2.tokenTypes[tree.type];
+            if (tokenData.arity === 0) {
+                tree.value = tokenData.eval();
+            } else if (tokenData.arity === 1) {
+                this.evaluate(tree.sub, val);
+                tree.value = tokenData.eval(tree.sub.value);
+            } else {
+                // arity === 2
+                this.evaluate(tree.lsub, val);
+                this.evaluate(tree.rsub, val);
+                tree.value = tokenData.eval(tree.lsub.value, tree.rsub.value);
+            }
+        }
     },
 };
 
