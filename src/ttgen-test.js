@@ -1,128 +1,5 @@
 "use strict";
 
-QUnit.module("Tokenizer");
-
-
-
-QUnit.module("Parser");
-
-QUnit.test("testEmpty", function(assert) {
-    assert.deepEqual(ttgen.parse(""), undefined);
-});
-
-QUnit.test("testId", function(assert) {
-    assert.deepEqual(ttgen.parse("p_0"), { type: "id", value: "p_0" });
-    assert.deepEqual(ttgen.parse(" p_0  "), { type: "id", value: "p_0" });
-
-    var e = ttgen.parse(")");
-    assert.deepEqual(e.type, "error");
-    assert.deepEqual(e.pos, 0);
-
-    e = ttgen.parse("p_0)");
-    assert.deepEqual(e.type, "error");
-    assert.deepEqual(e.pos, 3);
-
-    e = ttgen.parse("p_0 p_0");
-    assert.deepEqual(e.type, "error");
-    assert.deepEqual(e.pos, 4);
-});
-
-QUnit.test("testNot", function(assert) {
-    assert.deepEqual(ttgen.parse("\\lnot A"), { type: "not", value: { type: "id", value: "A" } });
-    assert.deepEqual(ttgen.parse("\\neg \\lnot A"), { type: "not", value: { type: "not", value: { type: "id", value: "A" } } });
-    var e = ttgen.parse("\\lnot A B");
-    assert.deepEqual(e.type, "error");
-    assert.deepEqual(e.pos, 8);
-});
-
-QUnit.test("testAnd", function(assert) {
-    var r = ttgen.parse("(A\\land B)");
-    assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
-
-    r = ttgen.parse("(A\\land\\lnot B)");
-    assert.deepEqual(r, {
-        type: "and",
-        lvalue: {
-            type: "id",
-            value: "A"
-        },
-        rvalue: {
-            type: "not",
-            value: {
-                type: "id",
-                value: "B"
-            }
-        }
-    });
-
-    r = ttgen.parse("(A\\land(B\\land C))");
-    assert.deepEqual(r, {
-        type: "and",
-        lvalue: {
-            type: "id",
-            value: "A"
-        },
-        rvalue: {
-            type: "and",
-            lvalue: {
-                type: "id",
-                value: "B"
-            },
-            rvalue: {
-                type: "id",
-                value: "C"
-            }
-        }
-    });
-});
-
-QUnit.test("testImplParens", function(assert) {
-    var r = ttgen.parse("A\\land B");
-    assert.deepEqual(r, { type: "and", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
-});
-
-QUnit.test("test", function(assert) {
-    var r = ttgen.parse("(A\\to B)");
-    assert.deepEqual(r, { type: "implies", lvalue: { type: "id", value: "A" }, rvalue: { type: "id", value: "B" } });
-
-    r = ttgen.parse("A\\to( ( B_{10}\\land Cee)\\leftrightarrow A)");
-    assert.deepEqual(r, {
-        type: "implies",
-        lvalue: {
-            type: "id",
-            value: "A"
-        },
-        rvalue: {
-            type: "iff",
-            lvalue: {
-                type: "and",
-                lvalue: {
-                    type: "id",
-                    value: "B_{10}"
-                },
-                rvalue: {
-                    type: "id",
-                    value: "Cee"
-                }
-            },
-            rvalue: {
-                type: "id",
-                value: "A"
-            }
-        }
-    });
-});
-
-QUnit.test("testError", function(assert) {
-    var r = ttgen.parse("A\\to B)");
-    assert.deepEqual(r.type, "error");
-    assert.deepEqual(r.pos, 6);
-
-    r = ttgen.parse("\\lnot(A\\to B");
-    assert.deepEqual(r.type, "error");
-    assert.deepEqual(r.pos, 12);
-});
-
 QUnit.module("Evaluator");
 
 QUnit.test("testUniq", function(assert) {
@@ -471,6 +348,18 @@ QUnit.test("unary", function(assert) {
         sub: { type: "symbol", name: "A" } });
     assert.deepEqual(ttgen.parser2.parse("NOT p_{3}"), { type: "not", str: "NOT",
         sub: { type: "symbol", name: "p_{3}" } });
+    assert.deepEqual(ttgen.parser2.parse("! ! A"), {
+        type: "not",
+        str: "!",
+        sub: {
+            type: "not",
+            str: "!",
+            sub: {
+                type: "symbol",
+                name: "A"
+            }
+        }
+    });
 });
 
 QUnit.test("binary", function(assert) {
