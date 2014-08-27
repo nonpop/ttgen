@@ -9,7 +9,7 @@ ttgen.options = {
     falseSymbol : "0",
 };
 
-ttgen.parser2 = {
+ttgen.parser = {
     // A very simple tokenizer. The parentheses '(' and ')'
     // and space ' ' are punctuation. The input is split into
     // identifiers separated by punctuation, and space is removed.
@@ -116,7 +116,7 @@ ttgen.parser2 = {
     // The position of the possible extra beginning parenthesis is -1.
     tokenize: function(input) {
         var tokens = this.getTokens(input);
-        tokens.map(function(t) { ttgen.parser2.classifyToken(t); });
+        tokens.map(function(t) { ttgen.parser.classifyToken(t); });
 
         // Since every binary connective needs a pair of parentheses
         // and nothing else does, we just count both and check if they match.
@@ -125,7 +125,7 @@ ttgen.parser2 = {
             if (t.type === "(")
                 ++lparenCount;
             else {
-                var tokData = ttgen.parser2.tokenTypes[t.type];
+                var tokData = ttgen.parser.tokenTypes[t.type];
                 if (tokData && tokData.arity === 2)
                     ++binopCount;
             }
@@ -173,7 +173,7 @@ ttgen.parser2 = {
                     return { newIdx: null, tree: { type: "error", token: null, desc: "unexpected end of input" } };
 
                 var connective = tokens[lsub.newIdx];
-                if (!ttgen.parser2.tokenTypes[connective.type] || ttgen.parser2.tokenTypes[connective.type].arity !== 2)
+                if (!ttgen.parser.tokenTypes[connective.type] || ttgen.parser.tokenTypes[connective.type].arity !== 2)
                     return { newIdx: null, tree: { type: "error", token: connective,
                         desc: "expected binary connective at " + connective.pos + " but got '" + connective.str + "'" } };
 
@@ -188,7 +188,7 @@ ttgen.parser2 = {
                     type: connective.type, lsub: lsub.tree, rsub: rsub.tree, str: connective.str } };
             } else {
                 // a nullary or unary connective
-                var arity = ttgen.parser2.tokenTypes[token.type].arity;
+                var arity = ttgen.parser.tokenTypes[token.type].arity;
                 if (arity === 0) {
                     return { newIdx: tokIdx+1, tree: { type: token.type, str: token.str } };
                 } else if (arity === 1) {
@@ -289,7 +289,7 @@ ttgen.evaluator = {
         if (tree.type === "symbol") {
             tree.value = val[tree.name];
         } else {
-            var tokenData = ttgen.parser2.tokenTypes[tree.type];
+            var tokenData = ttgen.parser.tokenTypes[tree.type];
             if (tokenData.arity === 0) {
                 tree.value = tokenData.eval();
             } else if (tokenData.arity === 1) {

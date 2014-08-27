@@ -3,39 +3,39 @@
 QUnit.module("tokenizer");
 
 QUnit.test("empty", function(assert) {
-    assert.deepEqual(ttgen.parser2.getTokens(""), []);
-    assert.deepEqual(ttgen.parser2.getTokens(" "), []);
-    assert.deepEqual(ttgen.parser2.getTokens("  "), []);
+    assert.deepEqual(ttgen.parser.getTokens(""), []);
+    assert.deepEqual(ttgen.parser.getTokens(" "), []);
+    assert.deepEqual(ttgen.parser.getTokens("  "), []);
 });
 
 QUnit.test("parens", function(assert) {
-    assert.deepEqual(ttgen.parser2.getTokens("("), [ { pos: 0, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens(")"), [ { pos: 0, str: ")" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens("(("), [ { pos: 0, str: "(" }, { pos: 1, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens("()"), [ { pos: 0, str: "(" }, { pos: 1, str: ")" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens(")("), [ { pos: 0, str: ")" }, { pos: 1, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens("  )( "), [ { pos: 2, str: ")" }, { pos: 3, str: "(" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("("), [ { pos: 0, str: "(" } ]);
+    assert.deepEqual(ttgen.parser.getTokens(")"), [ { pos: 0, str: ")" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("(("), [ { pos: 0, str: "(" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("()"), [ { pos: 0, str: "(" }, { pos: 1, str: ")" } ]);
+    assert.deepEqual(ttgen.parser.getTokens(")("), [ { pos: 0, str: ")" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("  )( "), [ { pos: 2, str: ")" }, { pos: 3, str: "(" } ]);
 });
 
 QUnit.test("identifiers", function(assert) {
-    assert.deepEqual(ttgen.parser2.getTokens("hello"), [ { pos: 0, str: "hello" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens("  hello  "), [ { pos: 2, str: "hello" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens(" hello  hi "), [ { pos: 1, str: "hello" }, { pos: 8, str: "hi" } ]);
-    assert.deepEqual(ttgen.parser2.getTokens("(hello )hi ( "), [
+    assert.deepEqual(ttgen.parser.getTokens("hello"), [ { pos: 0, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("  hello  "), [ { pos: 2, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser.getTokens(" hello  hi "), [ { pos: 1, str: "hello" }, { pos: 8, str: "hi" } ]);
+    assert.deepEqual(ttgen.parser.getTokens("(hello )hi ( "), [
             { pos: 0, str: "(" },
             { pos: 1, str: "hello" },
             { pos: 7, str: ")" },
             { pos: 8, str: "hi" },
             { pos: 11, str: "(" }
     ]);
-    assert.deepEqual(ttgen.parser2.getTokens("(A \\land B)"), [
+    assert.deepEqual(ttgen.parser.getTokens("(A \\land B)"), [
             { pos: 0, str: "(" },
             { pos: 1, str: "A" },
             { pos: 3, str: "\\land" },
             { pos: 9, str: "B" },
             { pos: 10, str: ")" }
     ]);
-    assert.deepEqual(ttgen.parser2.getTokens("(A& B)->C)-> C"), [
+    assert.deepEqual(ttgen.parser.getTokens("(A& B)->C)-> C"), [
             { pos: 0, str: "(" },
             { pos: 1, str: "A&" },
             { pos: 4, str: "B" },
@@ -49,35 +49,35 @@ QUnit.test("identifiers", function(assert) {
 
 QUnit.test("classifier", function(assert) {
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: ")" }),
+            ttgen.parser.classifyToken({ str: ")" }),
             { str: ")", type: ")" });
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: "&" }),
+            ttgen.parser.classifyToken({ str: "&" }),
             { str: "&", type: "and" });
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: "\\land" }),
+            ttgen.parser.classifyToken({ str: "\\land" }),
             { str: "\\land", type: "and" });
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: "IFF" }),
+            ttgen.parser.classifyToken({ str: "IFF" }),
             { str: "IFF", type: "iff" });
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: "p_{0}" }),
+            ttgen.parser.classifyToken({ str: "p_{0}" }),
             { str: "p_{0}", type: "symbol" });
     assert.deepEqual(
-            ttgen.parser2.classifyToken({ str: "FALSE" }),
+            ttgen.parser.classifyToken({ str: "FALSE" }),
             { str: "FALSE", type: "false" });
 });
 
 QUnit.test("tokenizer", function(assert) {
-    assert.deepEqual(ttgen.parser2.tokenize(""), []);
-    assert.deepEqual(ttgen.parser2.tokenize("p_{0}"), [ { pos: 0, str: "p_{0}", type: "symbol" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("(p_0 \\to q)"),
+    assert.deepEqual(ttgen.parser.tokenize(""), []);
+    assert.deepEqual(ttgen.parser.tokenize("p_{0}"), [ { pos: 0, str: "p_{0}", type: "symbol" } ]);
+    assert.deepEqual(ttgen.parser.tokenize("(p_0 \\to q)"),
             [ { pos: 0, str: "(", type: "(" },
               { pos: 1, str: "p_0", type: "symbol" },
               { pos: 5, str: "\\to", type: "implies" },
               { pos: 9, str: "q", type: "symbol" },
               { pos: 10, str: ")", type: ")" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize(" p_0 \\to q"),
+    assert.deepEqual(ttgen.parser.tokenize(" p_0 \\to q"),
             [ { pos: -1, str: "(", type: "(" },
               { pos: 1, str: "p_0", type: "symbol" },
               { pos: 5, str: "\\to", type: "implies" },
@@ -89,7 +89,7 @@ QUnit.module("parser");
 
 QUnit.test("errors", function(assert) {
     function testErr(input, desc) {
-        var e = ttgen.parser2.parse(input);
+        var e = ttgen.parser.parse(input);
         assert.equal(e.type, "error");
         if (desc)
             assert.equal(e.desc, desc);
@@ -105,7 +105,7 @@ QUnit.test("errors", function(assert) {
 });
 
 QUnit.test("empty", function(assert) {
-    assert.deepEqual(ttgen.parser2.parse(""), null);
+    assert.deepEqual(ttgen.parser.parse(""), null);
 });
 
 // TODO: maybe this could be moved to some test setup thing?
@@ -114,21 +114,21 @@ var makeSymbol = function(name) {
 };
 
 QUnit.test("identifier", function(assert) {
-    assert.deepEqual(ttgen.parser2.parse("p"), makeSymbol("p"));
+    assert.deepEqual(ttgen.parser.parse("p"), makeSymbol("p"));
 });
 
 QUnit.test("constant", function(assert) {
-    assert.deepEqual(ttgen.parser2.parse("1"), { type: "true", str: "1" });
-    assert.deepEqual(ttgen.parser2.parse("\\top"), { type: "true", str: "\\top" });
-    assert.deepEqual(ttgen.parser2.parse("FALSE"), { type: "false", str: "FALSE" });
+    assert.deepEqual(ttgen.parser.parse("1"), { type: "true", str: "1" });
+    assert.deepEqual(ttgen.parser.parse("\\top"), { type: "true", str: "\\top" });
+    assert.deepEqual(ttgen.parser.parse("FALSE"), { type: "false", str: "FALSE" });
 });
 
 QUnit.test("unary", function(assert) {
-    assert.deepEqual(ttgen.parser2.parse("! A"), { type: "not", str: "!",
+    assert.deepEqual(ttgen.parser.parse("! A"), { type: "not", str: "!",
         sub: makeSymbol("A") });
-    assert.deepEqual(ttgen.parser2.parse("NOT p_{3}"), { type: "not", str: "NOT",
+    assert.deepEqual(ttgen.parser.parse("NOT p_{3}"), { type: "not", str: "NOT",
         sub: makeSymbol("p_{3}") });
-    assert.deepEqual(ttgen.parser2.parse("! ! A"), {
+    assert.deepEqual(ttgen.parser.parse("! ! A"), {
         type: "not",
         str: "!",
         sub: {
@@ -140,13 +140,13 @@ QUnit.test("unary", function(assert) {
 });
 
 QUnit.test("binary", function(assert) {
-    assert.deepEqual(ttgen.parser2.parse("(A & B)"), {
+    assert.deepEqual(ttgen.parser.parse("(A & B)"), {
         type: "and",
         str: "&",
         lsub: makeSymbol("A"),
         rsub: makeSymbol("B")
     });
-    assert.deepEqual(ttgen.parser2.parse("!(A & B)"), {
+    assert.deepEqual(ttgen.parser.parse("!(A & B)"), {
         type: "not",
         str: "!",
         sub: {
@@ -156,7 +156,7 @@ QUnit.test("binary", function(assert) {
             rsub: makeSymbol("B")
         }
     });
-    assert.deepEqual(ttgen.parser2.parse("! A & B"), {
+    assert.deepEqual(ttgen.parser.parse("! A & B"), {
         type: "and",
         str: "&",
         lsub: {
@@ -166,7 +166,7 @@ QUnit.test("binary", function(assert) {
         },
         rsub: makeSymbol("B")
     });
-    assert.deepEqual(ttgen.parser2.parse("A & ! B"), {
+    assert.deepEqual(ttgen.parser.parse("A & ! B"), {
         type: "and",
         str: "&",
         lsub: makeSymbol("A"),
@@ -176,7 +176,7 @@ QUnit.test("binary", function(assert) {
             sub: makeSymbol("B")
         }
     });
-    assert.deepEqual(ttgen.parser2.parse("(A & B) & C"), {
+    assert.deepEqual(ttgen.parser.parse("(A & B) & C"), {
         type: "and",
         str: "&",
         lsub: {
@@ -187,7 +187,7 @@ QUnit.test("binary", function(assert) {
         },
         rsub: makeSymbol("C")
     });
-    assert.deepEqual(ttgen.parser2.parse("A & (B & C)"), {
+    assert.deepEqual(ttgen.parser.parse("A & (B & C)"), {
         type: "and",
         str: "&",
         lsub: makeSymbol("A"),
@@ -219,13 +219,13 @@ QUnit.test("testRepeat", function(assert) {
 });
 
 QUnit.test("testSymbols", function(assert) {
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("A")), ["A"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("A \\land B")), ["A","B"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("A \\land (B \\lor C)")), ["A","B","C"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("A \\land (\\lnot B \\lor C)")), ["A","B","C"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("B \\land (\\lnot A \\lor C)")), ["A","B","C"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("B \\land (\\lnot A \\lor B)")), ["A","B"]);
-    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser2.parse("A \\land A")), ["A"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("A")), ["A"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("A \\land B")), ["A","B"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("A \\land (B \\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("A \\land (\\lnot B \\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("B \\land (\\lnot A \\lor C)")), ["A","B","C"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("B \\land (\\lnot A \\lor B)")), ["A","B"]);
+    assert.deepEqual(ttgen.evaluator.getSymbols(ttgen.parser.parse("A \\land A")), ["A"]);
 });
 
 QUnit.test("testValuation", function(assert) {
@@ -246,7 +246,7 @@ QUnit.test("testValuation", function(assert) {
 });
 
 QUnit.test("testSymbol", function(assert) {
-    var tree = ttgen.parser2.parse("A");
+    var tree = ttgen.parser.parse("A");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 2; ++i) {
@@ -257,7 +257,7 @@ QUnit.test("testSymbol", function(assert) {
 });
 
 QUnit.test("testNot", function(assert) {
-    var tree = ttgen.parser2.parse("\\lnot A");
+    var tree = ttgen.parser.parse("\\lnot A");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 2; ++i) {
@@ -268,7 +268,7 @@ QUnit.test("testNot", function(assert) {
 });
 
 QUnit.test("testAnd", function(assert) {
-    var tree = ttgen.parser2.parse("A \\land B");
+    var tree = ttgen.parser.parse("A \\land B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -279,7 +279,7 @@ QUnit.test("testAnd", function(assert) {
 });
 
 QUnit.test("testOr", function(assert) {
-    var tree = ttgen.parser2.parse("A \\lor B");
+    var tree = ttgen.parser.parse("A \\lor B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -290,7 +290,7 @@ QUnit.test("testOr", function(assert) {
 });
 
 QUnit.test("testImplies", function(assert) {
-    var tree = ttgen.parser2.parse("A \\to B");
+    var tree = ttgen.parser.parse("A \\to B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -301,7 +301,7 @@ QUnit.test("testImplies", function(assert) {
 });
 
 QUnit.test("testIff", function(assert) {
-    var tree = ttgen.parser2.parse("A \\leftrightarrow B");
+    var tree = ttgen.parser.parse("A \\leftrightarrow B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -312,7 +312,7 @@ QUnit.test("testIff", function(assert) {
 });
 
 QUnit.test("testNand", function(assert) {
-    var tree = ttgen.parser2.parse("A \\mid B");
+    var tree = ttgen.parser.parse("A \\mid B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -323,7 +323,7 @@ QUnit.test("testNand", function(assert) {
 });
 
 QUnit.test("testNor", function(assert) {
-    var tree = ttgen.parser2.parse("A \\downarrow B");
+    var tree = ttgen.parser.parse("A \\downarrow B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -334,7 +334,7 @@ QUnit.test("testNor", function(assert) {
 });
 
 QUnit.test("testXor", function(assert) {
-    var tree = ttgen.parser2.parse("A XOR B");
+    var tree = ttgen.parser.parse("A XOR B");
     var sym = ttgen.evaluator.getSymbols(tree);
 
     for (var i = 0; i < 4; ++i) {
@@ -345,7 +345,7 @@ QUnit.test("testXor", function(assert) {
 });
 
 QUnit.test("test", function(assert) {
-    var tree = ttgen.parser2.parse("(A -> (B -> C)) -> ((A -> B) -> (A -> C))");
+    var tree = ttgen.parser.parse("(A -> (B -> C)) -> ((A -> B) -> (A -> C))");
     var sym = ttgen.evaluator.getSymbols(tree);
     for (var i = 0; i < 8; ++i) {
         var val = ttgen.evaluator.getValuation(sym, i);
@@ -353,7 +353,7 @@ QUnit.test("test", function(assert) {
         assert.deepEqual(tree.value, true);
     }
 
-    tree = ttgen.parser2.parse("(A -> B) -> (! B -> ! A)");
+    tree = ttgen.parser.parse("(A -> B) -> (! B -> ! A)");
     sym = ttgen.evaluator.getSymbols(tree);
     for (var i = 0; i < 4; ++i) {
         var val = ttgen.evaluator.getValuation(sym, i);
@@ -390,7 +390,7 @@ var remakeString = function(tree) {
 
 QUnit.test("testParens", function(assert) {
     var testString = function(input) {
-        var tree = ttgen.parser2.parse(input);
+        var tree = ttgen.parser.parse(input);
         ttgen.tablegen.evaluateParens(tree);
         assert.deepEqual(remakeString(tree), input);
     };
@@ -404,13 +404,13 @@ QUnit.test("testParens", function(assert) {
 });
 
 QUnit.test("testLatexHeader", function(assert) {
-    var tree = ttgen.parser2.parse("((\\lnot(A \\land B)\\lor(\\lnot A \\land \\lnot B))\\to \\lnot C)");
+    var tree = ttgen.parser.parse("((\\lnot(A \\land B)\\lor(\\lnot A \\land \\lnot B))\\to \\lnot C)");
     var expected = "    A & B & C & ((\\lnot & (A & \\land & B) & \\lor & (\\lnot & A & \\land & \\lnot & B)) & \\to & \\lnot & C) ";
     assert.deepEqual(ttgen.tablegen.makeLatexTableHeader(tree), expected);
 });
 
 QUnit.test("testLatexRows", function(assert) {
-    var tree = ttgen.parser2.parse("A \\to B");
+    var tree = ttgen.parser.parse("A \\to B");
     ttgen.tablegen.evaluateParens(tree);
     var sym = ttgen.evaluator.getSymbols(tree);
 
