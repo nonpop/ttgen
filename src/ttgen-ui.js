@@ -86,7 +86,7 @@ ttgen.ui.saveSettings = function() {
 // the *Cookie functions modified are from w3schools.com
 ttgen.ui.setCookie = function(cname, cvalue, exdays) {
     var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toGMTString();
     document.cookie = cname + "=" + cvalue + "; " + expires;
 };
@@ -94,7 +94,7 @@ ttgen.ui.setCookie = function(cname, cvalue, exdays) {
 ttgen.ui.getCookie = function(cname) {
     var name = cname + "=";
     var ca = document.cookie.split(';');
-    for(var i = 0; i < ca.length; i++) {
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i];
         while (c.charAt(0) == ' ')
             c = c.substring(1);

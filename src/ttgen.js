@@ -3,10 +3,10 @@
 var ttgen = {};
 
 ttgen.options = {
-    reverseCols : false,
-    reverseRows : false,
-    trueSymbol : "1",
-    falseSymbol : "0",
+    reverseCols: false,
+    reverseRows: false,
+    trueSymbol: "1",
+    falseSymbol: "0"
 };
 
 ttgen.parser = {
@@ -90,7 +90,7 @@ ttgen.parser = {
             ids: [ "XOR", "\\oplus" ],
             arity: 2,
             eval: function(a, b) { return a !== b; }
-        },
+        }
     },
 
     // Classifies a token by adding a 'type' property. Returns the modified token.
@@ -162,7 +162,7 @@ ttgen.parser = {
                 return { newIdx: null, tree: { type: "error", token: token, desc: "unexpected ')' at " + token.pos } };
             } else if (token.type === "symbol") {
                 // a single proposition symbol
-                return { newIdx: tokIdx+1, tree: { type: "symbol", name: token.str, str: token.str } };
+                return { newIdx: tokIdx + 1, tree: { type: "symbol", name: token.str, str: token.str } };
             } else if (token.type === "(") {
                 // a binary connective
                 var lsub = recursiveBuildTree(tokIdx + 1);
@@ -223,7 +223,7 @@ ttgen.parser = {
         if (tokens.length === 0)
             return null;
         return this.buildSyntaxTree(tokens);
-    },
+    }
 };
 
 // remove duplicates from a sorted array
@@ -232,7 +232,7 @@ Array.prototype.uniq = function() {
         return this;
     var res = [ this[0] ];
     for (var i = 1; i < this.length; ++i) {
-        if (this[i-1] !== this[i])
+        if (this[i - 1] !== this[i])
             res.push(this[i]);
     }
     return res;
@@ -240,7 +240,7 @@ Array.prototype.uniq = function() {
 
 // repeat a string
 String.prototype.repeat = function(n) {
-    return new Array(n+1).join(this);
+    return new Array(n + 1).join(this);
 }
 
 ttgen.evaluator = {
@@ -271,7 +271,7 @@ ttgen.evaluator = {
             if (!ttgen.options.reverseCols)
                 col = i;
             else
-                col = (symbols.length-1) - i;
+                col = (symbols.length - 1) - i;
 
             // TODO: how compatible are these bit operations?
             var bit = tableRow & (1 << col);
@@ -302,7 +302,7 @@ ttgen.evaluator = {
                 tree.value = tokenData.eval(tree.lsub.value, tree.rsub.value);
             }
         }
-    },
+    }
 };
 
 ttgen.tablegen = {
@@ -329,11 +329,11 @@ ttgen.tablegen = {
                 default:
                     tree.par = 0;
                     if (par < 0) {
-                        recursiveEvaluateParens(tree.lsub, par-1);
+                        recursiveEvaluateParens(tree.lsub, par - 1);
                         recursiveEvaluateParens(tree.rsub, 1);
                     } else {
                         recursiveEvaluateParens(tree.lsub, -1);
-                        recursiveEvaluateParens(tree.rsub, par+1);
+                        recursiveEvaluateParens(tree.rsub, par + 1);
                     }
                     break;
             }
@@ -441,7 +441,7 @@ ttgen.tablegen = {
         
         for (var i = 0; i < Math.pow(2, sym.length); ++i) {
             res += this.makeLatexTableRow(tree, i);
-            if (i+1 < Math.pow(2, sym.length)) {
+            if (i + 1 < Math.pow(2, sym.length)) {
                 res += "\\\\\n";
             } else {
                 res += "\n";
@@ -450,6 +450,6 @@ ttgen.tablegen = {
 
         res += "  \\end{array}\n\\]";
         return res;
-    },
+    }
 };
 
