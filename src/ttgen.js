@@ -449,7 +449,7 @@ ttgen.parser2 = {
             eval: function() { return true; }
         },
         "false": {
-            cds: [ "FALSE", "0", "\\bot" ],
+            ids: [ "FALSE", "0", "\\bot" ],
             arity: 0,
             eval: function() { return false; }
         },
@@ -537,6 +537,94 @@ ttgen.parser2 = {
             tokens.push({ pos: input.length, str: ")", type: ")" });
         }
         return tokens;
-    }
+    },
+
+    // Builds the syntax tree for the given tokens, if possible.
+    // - A node in the tree is an object with a property "type" which is either "symbol",
+    //   "error", or a key into tokenTypes.
+    // - If type is "symbol", then the node has a property "name" which is the name
+    //   (identifier in the input) of the symbol.
+    // - If type is "error", then "token" is the erroneous token, and "desc" a string 
+    //   describing the error.
+    // - If type describes a unary connective, then "sub" is a subtree.
+    // - If type describes a binary connective, then "lsub" and "rsub" are subtrees.
+    // - The connectives also have a "str" property which is the string the user gave for
+    //   the connective.
+    // Returns the root of the finished tree, or an error object.
+    buildSyntaxTree: function(tokens) {
+        // Parse a subexpression. Returns { newIdx, tree } or { null, error }.
+        // newIdx is one past the end of the parsed subexpression.
+        var recursiveBuildTree = function(tokIdx) {
+            if (tokIdx >= tokens.length)
+                return { newIdx: null, tree: { type: "error", token: null, desc: "unexpected end of input" } };
+
+            var token = tokens[tokIdx];
+            if (token.type === ")") {
+                // does not begin an expression
+                return { newIdx: null, tree: { type: "error", token: token, desc: "unexpected ')' at " + token.pos } };
+            } else if (token.type === "symbol") {
+                // a single proposition symbol
+                return { newIdx: tokIdx+1, tree: { type: "symbol", name: token.str } };
+            } else if (token.type === "(") {
+                // a binary connective
+                var lsub = recursiveBuildTree(tokIdx + 1);
+                if (!lsub.newIdx)    // could not parse subexpression
+                    return lsub;
+
+                if (lsub.newIdx >= tokens.length)
+                    return { newIdx: null, tree: { type: "error", token: null, desc: "unexpected end of input" } };
+
+                var connective = tokens[lsub.newIdx];
+                if (!ttgen.parser2.tokenTypes[connective.type] || ttgen.parser2.tokenTypes[connective.type].arity !== 2)
+                    return { newIdx: null, tree: { type: "error", token: connective,
+                        desc: "expected binary connective at " + connective.pos + " but got '" + connective.str + "'" } };
+
+                var rsub = recursiveBuildTree(lsub.newIdx + 1);
+                if (!rsub.newIdx)
+                    return rsub;
+
+                if (rsub.newIdx >= tokens.length || tokens[rsub.newIdx].type !== ")")
+                    return { newIdx: null, tree: { type: "error", token: null, desc: "expected ')' at " + rsub.newIdx } };
+
+                return { newIdx: rsub.newIdx + 1, tree: {
+                    type: connective.type, lsub: lsub.tree, rsub: rsub.tree, str: connective.str } };
+            } else {
+                // a nullary or unary connective
+                var arity = ttgen.parser2.tokenTypes[token.type].arity;
+                if (arity === 0) {
+                    return { newIdx: tokIdx+1, tree: { type: token.type, str: token.str } };
+                } else if (arity === 1) {
+                    var sub = recursiveBuildTree(tokIdx + 1);
+                    if (!sub.newIdx)
+                        return sub;
+                    else
+                        return { newIdx: sub.newIdx, tree: { type: token.type, sub: sub.tree, str: token.str } };
+                } else {
+                    return { newIdx: null, tree: { type: "error", token: token,
+                        desc: "unexpected binary connective '" + token.str + "' at " + token.pos } };
+                }
+            }
+        };
+
+        var tree = recursiveBuildTree(0);
+        if (!tree.newIdx) {
+            // parse failed
+            return tree.tree;
+        } else if (tree.newIdx < tokens.length) {
+            // there is still input left
+            var token = tokens[tree.newIdx];
+            return { type: "error", token: token, desc: "unexpected '" + token.str + "' at " + token.pos };
+        } else {
+            // succeeded
+            return tree.tree;
+        }
+    },
+
+    parse: function(input) {
+        var tokens = this.tokenize(input);
+        if (tokens.length === 0)
+            return null;
+        return this.buildSyntaxTree(tokens);
+    },
 };
 

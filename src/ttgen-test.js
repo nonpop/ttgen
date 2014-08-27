@@ -411,6 +411,9 @@ QUnit.test("classifier", function(assert) {
     assert.deepEqual(
             ttgen.parser2.classifyToken({ str: "p_{0}" }),
             { str: "p_{0}", type: "symbol" });
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: "FALSE" }),
+            { str: "FALSE", type: "false" });
 });
 
 QUnit.test("tokenizer", function(assert) {
@@ -428,5 +431,124 @@ QUnit.test("tokenizer", function(assert) {
               { pos: 5, str: "\\to", type: "implies" },
               { pos: 9, str: "q", type: "symbol" },
               { pos: 10, str: ")", type: ")" } ]);
+});
+
+QUnit.module("parser");
+
+QUnit.test("errors", function(assert) {
+    function testErr(input, desc) {
+        var e = ttgen.parser2.parse(input);
+        assert.equal(e.type, "error");
+        if (desc)
+            assert.equal(e.desc, desc);
+    }
+    testErr("(");
+    testErr("()");
+    testErr(")");
+    testErr("p q");
+    testErr("(p)");
+    testErr("(p &");
+    testErr("(p ! q)");
+    testErr("!(p)");
+});
+
+QUnit.test("empty", function(assert) {
+    assert.deepEqual(ttgen.parser2.parse(""), null);
+});
+
+QUnit.test("identifier", function(assert) {
+    assert.deepEqual(ttgen.parser2.parse("p"), { type: "symbol", name: "p" });
+});
+
+QUnit.test("constant", function(assert) {
+    assert.deepEqual(ttgen.parser2.parse("1"), { type: "true", str: "1" });
+    assert.deepEqual(ttgen.parser2.parse("\\top"), { type: "true", str: "\\top" });
+    assert.deepEqual(ttgen.parser2.parse("FALSE"), { type: "false", str: "FALSE" });
+});
+
+QUnit.test("unary", function(assert) {
+    assert.deepEqual(ttgen.parser2.parse("! A"), { type: "not", str: "!",
+        sub: { type: "symbol", name: "A" } });
+    assert.deepEqual(ttgen.parser2.parse("NOT p_{3}"), { type: "not", str: "NOT",
+        sub: { type: "symbol", name: "p_{3}" } });
+});
+
+QUnit.test("binary", function(assert) {
+    assert.deepEqual(ttgen.parser2.parse("(A & B)"), {
+        type: "and",
+        str: "&",
+        lsub: { type: "symbol", name: "A" },
+        rsub: { type: "symbol", name: "B" }
+    });
+    assert.deepEqual(ttgen.parser2.parse("!(A & B)"), {
+        type: "not",
+        str: "!",
+        sub: {
+            type: "and",
+            str: "&",
+            lsub: { type: "symbol", name: "A" },
+            rsub: { type: "symbol", name: "B" }
+        }
+    });
+    assert.deepEqual(ttgen.parser2.parse("! A & B"), {
+        type: "and",
+        str: "&",
+        lsub: {
+            type: "not",
+            str: "!",
+            sub: { type: "symbol", name: "A" }
+        },
+        rsub: { type: "symbol", name: "B" }
+    });
+    assert.deepEqual(ttgen.parser2.parse("A & ! B"), {
+        type: "and",
+        str: "&",
+        lsub: { type: "symbol", name: "A" },
+        rsub: {
+            type: "not",
+            str: "!",
+            sub: { type: "symbol", name: "B" }
+        }
+    });
+    assert.deepEqual(ttgen.parser2.parse("(A & B) & C"), {
+        type: "and",
+        str: "&",
+        lsub: {
+            type: "and",
+            str: "&",
+            lsub: {
+                type: "symbol",
+                name: "A"
+            },
+            rsub: {
+                type: "symbol",
+                name: "B"
+            }
+        },
+        rsub: {
+            type: "symbol",
+            name: "C"
+        }
+    });
+    assert.deepEqual(ttgen.parser2.parse("A & (B & C)"), {
+        type: "and",
+        str: "&",
+        lsub: {
+            type: "symbol",
+            name: "A"
+        },
+        rsub: {
+            type: "and",
+            str: "&",
+            lsub: {
+                type: "symbol",
+                name: "B"
+            },
+            rsub: {
+                type: "symbol",
+                name: "C"
+            }
+        }
+    });
 });
 
