@@ -77,7 +77,7 @@ ttgen.parser = {
             eval: function(a, b) { return a === b; }
         },
         "nand": {
-            ids: [ "NAND", "\\mid" ],
+            ids: [ "NAND", "\\mid", "\\uparrow" ],
             arity: 2,
             eval: function(a, b) { return !(a && b); }
         },
@@ -87,7 +87,7 @@ ttgen.parser = {
             eval: function(a, b) { return !(a || b); }
         },
         "xor": {
-            ids: [ "XOR" ],
+            ids: [ "XOR", "\\oplus" ],
             arity: 2,
             eval: function(a, b) { return a !== b; }
         },
@@ -354,14 +354,42 @@ ttgen.tablegen = {
     makeLatexTableHeader: function(tree) {
         var res = "    " + ttgen.evaluator.getSymbols(tree).join(" & ") + " ";
 
+        // map input token to latex version
+        var entry = function(tree) {
+            switch (tree.type) {
+                case "not": return "\\lnot";
+                case "and": return "\\land";
+                case "or": return "\\lor";
+                case "implies":
+                    if (tree.str === "=>" ||
+                            tree.str === "\\Rightarrow" ||
+                            tree.str === "\\implies")
+                    { return "\\Rightarrow"; }
+                    else return "\\to";
+                case "iff":
+                    if (tree.str === "<=>" ||
+                            tree.str === "\\Leftrightarrow" ||
+                            tree.str === "\\iff")
+                    { return "\\Leftrightarrow"; }
+                    else return "\\leftrightarrow";
+                case "nand":
+                    if (tree.str === "\\uparrow")
+                        return "\\uparrow";
+                    else
+                        return "\\mid";
+                case "nor": return "\\downarrow";
+                case "xor": return "\\oplus";
+            }
+        };
+
         this.evaluateParens(tree);
         var treeToHdr = function(tree) {
             if (tree.type === "symbol")
                 return "& " + ttgen.tablegen.parStr(tree.par, tree.str) + " ";
             else if (tree.type === "not")
-                return "& " + ttgen.tablegen.parStr(tree.par, tree.str) + " " + treeToHdr(tree.sub);
+                return "& " + ttgen.tablegen.parStr(tree.par, entry(tree)) + " " + treeToHdr(tree.sub);
             else
-                return treeToHdr(tree.lsub) + "& " + tree.str + " " + treeToHdr(tree.rsub);
+                return treeToHdr(tree.lsub) + "& " + entry(tree) + " " + treeToHdr(tree.rsub);
         };
         res += treeToHdr(tree);
         return res;
