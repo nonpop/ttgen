@@ -418,7 +418,7 @@ ttgen.parser2 = {
     // The return value is an array of objects { pos: x, str: y },
     // where y is a token (parenthesis or identifier) and x its
     // start position in the input.
-    tokenize: function(string) {
+    getTokens: function(string) {
         var len = string.length;
         var res = [];
         var i = 0;
@@ -506,8 +506,37 @@ ttgen.parser2 = {
                     return false;   // break from $.each loop
                 }
             });
+            if (!token.type)
+                token.type = "symbol";
         }
         return token;
     },
+
+    // This function first tokenizes 'input', then classifies
+    // the tokens, and finally adds extra outer parentheses if needed.
+    // Returns the resulting list of tokens.
+    // The position of the possible extra beginning parenthesis is -1.
+    tokenize: function(input) {
+        var tokens = this.getTokens(input);
+        tokens.map(function(t) { ttgen.parser2.classifyToken(t); });
+
+        // Since every binary connective needs a pair of parentheses
+        // and nothing else does, we just count both and check if they match.
+        var lparenCount = 0, binopCount = 0;
+        $.each(tokens, function(i, t) {
+            if (t.type === "(")
+                ++lparenCount;
+            else {
+                var tokData = ttgen.parser2.tokenTypes[t.type];
+                if (tokData && tokData.arity === 2)
+                    ++binopCount;
+            }
+        });
+        if (lparenCount < binopCount) {
+            tokens.unshift({ pos: -1, str: "(", type: "(" });
+            tokens.push({ pos: input.length, str: ")", type: ")" });
+        }
+        return tokens;
+    }
 };
 

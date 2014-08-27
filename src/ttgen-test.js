@@ -351,39 +351,39 @@ QUnit.test("testLatexRows", function(assert) {
 QUnit.module("tokenizer");
 
 QUnit.test("empty", function(assert) {
-    assert.deepEqual(ttgen.parser2.tokenize(""), []);
-    assert.deepEqual(ttgen.parser2.tokenize(" "), []);
-    assert.deepEqual(ttgen.parser2.tokenize("  "), []);
+    assert.deepEqual(ttgen.parser2.getTokens(""), []);
+    assert.deepEqual(ttgen.parser2.getTokens(" "), []);
+    assert.deepEqual(ttgen.parser2.getTokens("  "), []);
 });
 
 QUnit.test("parens", function(assert) {
-    assert.deepEqual(ttgen.parser2.tokenize("("), [ { pos: 0, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize(")"), [ { pos: 0, str: ")" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("(("), [ { pos: 0, str: "(" }, { pos: 1, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("()"), [ { pos: 0, str: "(" }, { pos: 1, str: ")" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize(")("), [ { pos: 0, str: ")" }, { pos: 1, str: "(" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("  )( "), [ { pos: 2, str: ")" }, { pos: 3, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("("), [ { pos: 0, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens(")"), [ { pos: 0, str: ")" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("(("), [ { pos: 0, str: "(" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("()"), [ { pos: 0, str: "(" }, { pos: 1, str: ")" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens(")("), [ { pos: 0, str: ")" }, { pos: 1, str: "(" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("  )( "), [ { pos: 2, str: ")" }, { pos: 3, str: "(" } ]);
 });
 
 QUnit.test("identifiers", function(assert) {
-    assert.deepEqual(ttgen.parser2.tokenize("hello"), [ { pos: 0, str: "hello" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("  hello  "), [ { pos: 2, str: "hello" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize(" hello  hi "), [ { pos: 1, str: "hello" }, { pos: 8, str: "hi" } ]);
-    assert.deepEqual(ttgen.parser2.tokenize("(hello )hi ( "), [
+    assert.deepEqual(ttgen.parser2.getTokens("hello"), [ { pos: 0, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("  hello  "), [ { pos: 2, str: "hello" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens(" hello  hi "), [ { pos: 1, str: "hello" }, { pos: 8, str: "hi" } ]);
+    assert.deepEqual(ttgen.parser2.getTokens("(hello )hi ( "), [
             { pos: 0, str: "(" },
             { pos: 1, str: "hello" },
             { pos: 7, str: ")" },
             { pos: 8, str: "hi" },
             { pos: 11, str: "(" }
     ]);
-    assert.deepEqual(ttgen.parser2.tokenize("(A \\land B)"), [
+    assert.deepEqual(ttgen.parser2.getTokens("(A \\land B)"), [
             { pos: 0, str: "(" },
             { pos: 1, str: "A" },
             { pos: 3, str: "\\land" },
             { pos: 9, str: "B" },
             { pos: 10, str: ")" }
     ]);
-    assert.deepEqual(ttgen.parser2.tokenize("(A& B)->C)-> C"), [
+    assert.deepEqual(ttgen.parser2.getTokens("(A& B)->C)-> C"), [
             { pos: 0, str: "(" },
             { pos: 1, str: "A&" },
             { pos: 4, str: "B" },
@@ -408,5 +408,25 @@ QUnit.test("classifier", function(assert) {
     assert.deepEqual(
             ttgen.parser2.classifyToken({ str: "IFF" }),
             { str: "IFF", type: "iff" });
+    assert.deepEqual(
+            ttgen.parser2.classifyToken({ str: "p_{0}" }),
+            { str: "p_{0}", type: "symbol" });
+});
+
+QUnit.test("tokenizer", function(assert) {
+    assert.deepEqual(ttgen.parser2.tokenize(""), []);
+    assert.deepEqual(ttgen.parser2.tokenize("p_{0}"), [ { pos: 0, str: "p_{0}", type: "symbol" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize("(p_0 \\to q)"),
+            [ { pos: 0, str: "(", type: "(" },
+              { pos: 1, str: "p_0", type: "symbol" },
+              { pos: 5, str: "\\to", type: "implies" },
+              { pos: 9, str: "q", type: "symbol" },
+              { pos: 10, str: ")", type: ")" } ]);
+    assert.deepEqual(ttgen.parser2.tokenize(" p_0 \\to q"),
+            [ { pos: -1, str: "(", type: "(" },
+              { pos: 1, str: "p_0", type: "symbol" },
+              { pos: 5, str: "\\to", type: "implies" },
+              { pos: 9, str: "q", type: "symbol" },
+              { pos: 10, str: ")", type: ")" } ]);
 });
 
