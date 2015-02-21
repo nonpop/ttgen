@@ -83,7 +83,7 @@ ttgen.ui.saveSettings = function() {
     }
 };
 
-// the *Cookie functions modified are from w3schools.com
+// the *Cookie functions are modified versions of those at w3schools.com
 ttgen.ui.setCookie = function(cname, cvalue, exdays) {
     var d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
