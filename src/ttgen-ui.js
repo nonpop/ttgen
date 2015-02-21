@@ -6,7 +6,7 @@ ttgen.ui.generateTables = function() {
     var tree = ttgen.parser.parse($("#input").val());
     if (tree && (tree.type !== "error")) {
         var t = ttgen.tablegen.makeLatexTable(tree);
-        $("#theTable").html(t);
+        $("#theTable").text(t).html();
         $("#theLatex").val(t);
         $("#errorArea").html("");
     } else {
